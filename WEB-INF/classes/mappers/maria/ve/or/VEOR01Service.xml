@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="VEOR01Service">
+ 
+  	<resultMap id="orderMap" type="hashMap">
+		<result property="ord_no"					column="ord_no" />
+		<result property="ord_typ"					column="ord_typ" />
+		<result property="ord_typ_nm"				column="ord_typ_nm" />
+		<result property="send_no"					column="send_no" />
+		<result property="send_nm"					column="send_nm" />
+		<result property="receive_no"				column="receive_no" />
+		<result property="receive_nm"				column="receive_nm" />
+		<result property="send_trade_comp_no"		column="send_trade_comp_no" />
+		<result property="receive_trade_comp_no"	column="receive_trade_comp_no" />
+		<result property="send_cc_comp_no"			column="send_cc_comp_no" />
+		<result property="receive_cc_comp_no"		column="receive_cc_comp_no" />
+		<result property="send_trade_comp_nm"		column="send_trade_comp_nm" />
+		<result property="receive_trade_comp_nm"	column="receive_trade_comp_nm" />
+		<result property="send_cc_comp_nm"			column="send_cc_comp_nm" />
+		<result property="receive_cc_comp_nm"		column="receive_cc_comp_nm" />
+		<result property="shipping_region_no"		column="shipping_region_no" />
+		<result property="send_region_no"			column="send_region_no" />
+		<result property="receive_region_no"		column="receive_region_no" />
+		<result property="shipping_region_nm"		column="shipping_region_nm" />
+		<result property="send_region_nm"			column="send_region_nm" />
+		<result property="receive_region_nm"		column="receive_region_nm" />
+		<result property="start_dt"					column="start_dt" />
+		<result property="arrive_dt"				column="arrive_dt" />
+		<result property="shipment_dt"				column="shipment_dt" />
+		<result property="transport_way"			column="transport_way" />
+		<result property="transport_way_nm"			column="transport_way_nm" />
+		<result property="e_commence_yn"			column="e_commence_yn" />
+		<result property="charge_target_typ"		column="charge_target_typ" />
+		<result property="charge_target_typ_nm"		column="charge_target_typ_nm" />
+		<result property="payment_method_typ"		column="payment_method_typ" />
+		<result property="start_vendor_no"			column="start_vendor_no" />
+		<result property="transfer_vendor_no"		column="transfer_vendor_no" />
+		<result property="arrive_vendor_no"			column="arrive_vendor_no" />
+		<result property="start_vendor_nm"			column="start_vendor_nm" />
+		<result property="transfer_vendor_nm"		column="transfer_vendor_nm" />
+		<result property="arrive_vendor_nm"			column="arrive_vendor_nm" />
+		<result property="doc_req_cer_origin_yn"	column="doc_req_cer_origin_yn" />
+		<result property="doc_req_product_yn"		column="doc_req_product_yn" />
+		<result property="doc_req_fta_yn"			column="doc_req_fta_yn" />
+		<result property="doc_req_su_yn"			column="doc_req_su_yn" />
+		<result property="stat_cd"					column="stat_cd" />
+		<result property="receive_dt"				column="receive_dt" />
+		<result property="release_dt"				column="release_dt" />
+		<result property="customer_memo"			column="customer_memo" jdbcType="VARCHAR" javaType="String" />
+		<result property="business_memo"			column="business_memo" jdbcType="VARCHAR" javaType="String" />
+		<result property="charge_memo"				column="charge_memo" jdbcType="VARCHAR" javaType="String" />
+		<result property="reg_id"					column="reg_id" />
+		<result property="reg_dt"					column="reg_dt" />
+		<result property="mod_id"					column="mod_id" />
+		<result property="mod_dt"					column="mod_dt" />
+		<result property="item_nm"					column="item_nm" />
+		<result property="item_cnt"					column="item_cnt" />
+		<result property="qty"						column="qty" />
+		<result property="amt"						column="amt" />
+		<result property="tot_amt"					column="tot_amt" />
+		<result property="box_qty"					column="box_qty" />
+		<result property="kg"						column="kg" />
+		<result property="cbm"						column="cbm" />
+	</resultMap>
+ 
+	<select id="getSearch" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select m.ord_no
+			,m.ord_typ
+			,case when(m.ord_typ = '1') then '운송접수' when(m.ord_typ = '2') then '보관접수' when(m.ord_typ = '3') then '견적접수'
+			 when(m.ord_typ = '4') then '원산지접수' when(m.ord_typ = '5') then '통관접수' end as ord_typ_nm
+			,m.send_no
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.send_no) as send_nm
+			, (select v.vendor_cd from ven_vendorinfo v where v.vendor_no = m.send_no) as send_cd
+			,m.receive_no
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.receive_no) as receive_nm
+			, (select v.vendor_cd from ven_vendorinfo v where v.vendor_no = m.receive_no) as receive_cd
+			,m.send_trade_comp_no
+			,m.receive_trade_comp_no
+			,m.send_cc_comp_no
+			,m.receive_cc_comp_no
+			,m.shipping_region_no
+			,m.send_region_no
+			,m.receive_region_no
+			, (select r.region_nm from tb_region r where r.code = m.shipping_region_no) as shipping_region_nm
+			, (select r.region_nm from tb_region r where r.code = m.send_region_no) as send_region_nm
+			, (select r.region_nm from tb_region r where r.code = m.receive_region_no) as receive_region_nm
+			, DATE_FORMAT(m.start_dt, '%Y-%m-%d') as start_dt
+			, DATE_FORMAT(m.arrive_dt, '%Y-%m-%d') as arrive_dt
+			, DATE_FORMAT(m.shipment_dt, '%Y-%m-%d') as shipment_dt
+			,m.transport_way
+			,(select code_nm from sys_codeinfo c where c.code_cd = m.transport_way) as transport_way_nm
+			,m.e_commence_yn
+			,m.charge_target_typ
+			,m.payment_method_typ
+			,m.start_vendor_no
+			,m.transfer_vendor_no
+			,m.arrive_vendor_no
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.start_vendor_no) as start_vendor_nm
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.transfer_vendor_no) as transfer_vendor_nm
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.arrive_vendor_no) as arrive_vendor_nm
+			,m.doc_req_cer_origin_yn
+			,m.doc_req_product_yn
+			,m.doc_req_fta_yn
+			,m.doc_req_su_yn
+			,m.stat_cd
+			,m.receive_dt
+			,m.release_dt
+			,m.reg_id
+			, DATE_FORMAT(m.reg_dt, '%Y-%m-%d') as reg_dt
+			,m.mod_id
+			, DATE_FORMAT(m.mod_dt, '%Y-%m-%d %T') as mod_dt
+			, (select concat(i.item_nm) as item_nm from ord_item i where i.ord_no = m.ord_no group by i.ord_no) as item_nm
+			, (select count(0) from ord_item i where i.ord_no = m.ord_no) as item_cnt
+			, (select sum(qty) from ord_item i where i.ord_no = m.ord_no) as qty
+			, (select sum(amt) from ord_item i where i.ord_no = m.ord_no) as amt
+			, (select sum(tot_amt) from ord_item i where i.ord_no = m.ord_no) as tot_amt
+			, (select sum(box_qty) from ord_item i where i.ord_no = m.ord_no) as box_qty
+			, (select round(sum(kg),1) from ord_item i where i.ord_no = m.ord_no) as kg
+			, (select round(sum(cbm),1) from ord_item i where i.ord_no = m.ord_no) as cbm
+		from ord_mst m
+		where stat_cd in (11601, 11602)
+		and m.send_no in (select vendor_no from ven_vendorinfo where upvendor_no = #{upvendor_no})
+		<if test='ord_typ != null and ord_typ != ""'>
+		and m.ord_typ = #{ord_typ}
+		</if>
+		order by m.reg_dt desc
+	</select>
+
+	<select id="selectRecentOrdItemList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select t.date_to_from
+		, t.item_nm 
+		from (
+				select concat(DATE_FORMAT(m.start_dt, '%Y-%m-%d'), ' ~ ',DATE_FORMAT(m.arrive_dt, '%Y-%m-%d') ) as date_to_from
+					,i.item_nm
+				from ord_mst m
+				inner join ord_item i on m.ord_no = i.ord_no
+				where m.send_no = #{send_no}  
+				and m.receive_no = #{receive_no}
+				and i.item_nm is not null
+				and i.item_nm != ''
+				limit 30
+		) t
+		group by t.date_to_from, t.item_nm		
+		order by t.date_to_from, t.item_nm	
+	</select>
+
+	<select id="getSearchDtl" parameterType="java.util.HashMap" resultMap="orderMap">
+		select m.ord_no
+			,m.ord_typ
+			,case when(m.ord_typ = '1') then '운송접수' when(m.ord_typ = '2') then '보관접수' when(m.ord_typ = '3') then '견적접수'
+			 when(m.ord_typ = '4') then '원산지접수' when(m.ord_typ = '5') then '통관접수' end as ord_typ_nm
+			,m.send_no
+			, (select concat('[',ifnull(v.vendor_cd,v.vendor_no), '] ', v.vendor_nm) from ven_vendorinfo v where v.vendor_no = m.send_no) as send_nm
+			,m.receive_no
+			, (select concat('[',ifnull(v.vendor_cd,v.vendor_no), '] ', v.vendor_nm) from ven_vendorinfo v where v.vendor_no = m.receive_no) as receive_nm
+			,m.send_trade_comp_no
+			,m.receive_trade_comp_no
+			,m.send_cc_comp_no
+			,m.receive_cc_comp_no
+			, (select concat('[',ifnull(v.vendor_cd,v.vendor_no), '] ', v.vendor_nm) from ven_vendorinfo v where v.vendor_no = m.send_trade_comp_no) as send_trade_comp_nm
+			, (select concat('[',ifnull(v.vendor_cd,v.vendor_no), '] ', v.vendor_nm) from ven_vendorinfo v where v.vendor_no = m.receive_trade_comp_no) as receive_trade_comp_nm
+			, (select concat('[',ifnull(v.vendor_cd,v.vendor_no), '] ', v.vendor_nm) from ven_vendorinfo v where v.vendor_no = m.send_cc_comp_no) as send_cc_comp_nm
+			, (select concat('[',ifnull(v.vendor_cd,v.vendor_no), '] ', v.vendor_nm) from ven_vendorinfo v where v.vendor_no = m.receive_cc_comp_no) as receive_cc_comp_nm
+			,m.shipping_region_no
+			,m.send_region_no
+			,m.receive_region_no
+			, (select addr from v_region r where r.code = m.shipping_region_no) as shipping_region_nm
+			, (select addr from v_region r where r.code = m.send_region_no) as send_region_nm
+			, (select addr from v_region r where r.code = m.receive_region_no) as receive_region_nm
+			, DATE_FORMAT(m.start_dt, '%Y-%m-%d') as start_dt
+			, DATE_FORMAT(m.arrive_dt, '%Y-%m-%d') as arrive_dt
+			, DATE_FORMAT(m.shipment_dt, '%Y-%m-%d') as shipment_dt
+			,m.transport_way
+			,(select code_nm from sys_codeinfo c where c.code_cd = m.transport_way) as transport_way_nm
+			,m.e_commence_yn
+			,m.charge_target_typ
+			,(select code_nm from sys_codeinfo c where c.code_cd = m.charge_target_typ) as charge_target_typ_nm
+			,m.payment_method_typ
+			,m.start_vendor_no
+			,m.transfer_vendor_no
+			,m.arrive_vendor_no
+			, (select concat('[',ifnull(v.vendor_cd,v.vendor_no), '] ', v.vendor_nm) from ven_vendorinfo v where v.vendor_no = m.start_vendor_no) as start_vendor_nm
+			, (select concat('[',ifnull(v.vendor_cd,v.vendor_no), '] ', v.vendor_nm) from ven_vendorinfo v where v.vendor_no = m.transfer_vendor_no) as transfer_vendor_nm
+			, (select concat('[',ifnull(v.vendor_cd,v.vendor_no), '] ', v.vendor_nm) from ven_vendorinfo v where v.vendor_no = m.arrive_vendor_no) as arrive_vendor_nm
+			,m.doc_req_cer_origin_yn
+			,m.doc_req_product_yn
+			,m.doc_req_fta_yn
+			,m.doc_req_su_yn
+			,m.stat_cd
+			,m.receive_dt
+			,m.release_dt
+			,m.customer_memo
+			,m.business_memo
+			,m.charge_memo
+			,m.reg_id
+			, DATE_FORMAT(m.reg_dt, '%Y-%m-%d') as reg_dt
+			,m.mod_id
+			, DATE_FORMAT(m.mod_dt, '%Y-%m-%d %T') as mod_dt
+			, (select concat(i.item_nm) as item_nm from ord_item i where i.ord_no = m.ord_no group by i.ord_no) as item_nm
+			, (select count(0) from ord_item i where i.ord_no = m.ord_no) as item_cnt
+			, (select sum(qty) from ord_item i where i.ord_no = m.ord_no) as qty
+			, (select sum(amt) from ord_item i where i.ord_no = m.ord_no) as amt
+			, (select sum(tot_amt) from ord_item i where i.ord_no = m.ord_no) as tot_amt
+			, (select sum(box_qty) from ord_item i where i.ord_no = m.ord_no) as box_qty
+			, (select round(sum(kg),1) from ord_item i where i.ord_no = m.ord_no) as kg
+			, (select round(sum(cbm),1) from ord_item i where i.ord_no = m.ord_no) as cbm
+		from ord_mst m
+		where m.ord_no = #{ord_no}
+
+
+	</select>
+
+	<insert id="insertOrdWh" parameterType="java.util.HashMap">
+		insert into ord_wh (
+			wh_no
+			,ord_no
+			,stored_dt
+			,box_cnt
+			,remain_box_cnt
+			,packing_unit
+			,weight
+			,cbm
+			,comment
+			,reg_id
+			,reg_dt
+		) VALUES (
+			#{wh_no}
+			,#{ord_no}
+			,#{stored_dt}
+			,#{box_cnt}
+			,#{box_cnt}
+			,#{packing_unit}
+			,#{weight}
+			,#{cbm}
+			,#{comment}	
+			, #{reg_id}
+			, now()
+		)
+	</insert>
+
+	<update id="updateOrdMst" parameterType="java.util.HashMap">
+		update ord_mst 
+		set stat_cd = #{stat_cd}
+		, mod_id = #{mod_id}
+		, mod_dt = now()
+		where ord_no = #{ord_no}
+	</update>
+	
+	<update id="deleteOrder" parameterType="java.util.HashMap">
+		update ord_mst 
+		set stat_cd = '11607'
+			, mod_id = #{mod_id}
+			, mod_dt = now()
+		where ord_no = #{ord_no}
+	</update>
+	
+	
+	<delete id="delete" parameterType="java.util.HashMap">
+		delete from pl_mst where pl_no = #{pl_no}
+	</delete>
+
+</mapper>

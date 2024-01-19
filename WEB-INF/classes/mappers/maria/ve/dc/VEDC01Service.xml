@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="VEDC01Service">
+ 
+ 
+ 	<select id="selectBanner" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select 
+			vendor_no
+			,filename_txt
+			,attachfile_txt
+			,att_seq
+			, reg_id
+			, DATE_FORMAT(reg_dt, '%Y-%m-%d %T') as reg_dt
+			, mod_id
+			, DATE_FORMAT(mod_dt, '%Y-%m-%d %T') as mod_dt	
+		from vendor_banner_attach
+		where vendor_no = #{vendor_no}
+	</select>
+ 
+ 	<select id="getDefaultBoardCate" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select 
+			board_cate_no
+			,board_cate_nm
+			,vendor_no
+			,seq
+			, reg_id
+			, DATE_FORMAT(reg_dt, '%Y-%m-%d %T') as reg_dt
+			, mod_id
+			, DATE_FORMAT(mod_dt, '%Y-%m-%d %T') as mod_dt	
+		from board_cate
+		where vendor_no = #{vendor_no} and default_yn = 'Y' and board_cate_typ = #{board_cate_typ}
+	</select>
+	
+	<select id="getDefaultBoard" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select 
+			board_no
+			,board_nm
+			,seq
+			,board_cate_no
+			, reg_id
+			, DATE_FORMAT(reg_dt, '%Y-%m-%d %T') as reg_dt
+			, mod_id
+			, DATE_FORMAT(mod_dt, '%Y-%m-%d %T') as mod_dt	
+		from board_mst
+		where board_cate_no = #{board_cate_no} and default_yn = 'Y'
+	</select>
+ 
+ 
+	<select id="selectBoardAttach" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select 
+			board_data_no
+			,att_seq
+			,filename_txt
+			,attachfile_txt
+			,download_cnt
+			, reg_id
+			, DATE_FORMAT(reg_dt, '%Y-%m-%d %T') as reg_dt
+			, mod_id
+			, DATE_FORMAT(mod_dt, '%Y-%m-%d %T') as mod_dt	
+		from board_attach
+		where board_data_no = #{board_data_no}
+	</select>
+	
+	<select id="selectBoardCate" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select 
+			board_cate_no
+			,board_cate_nm
+			,vendor_no
+			,seq
+			, reg_id
+			, DATE_FORMAT(reg_dt, '%Y-%m-%d %T') as reg_dt
+			, mod_id
+			, DATE_FORMAT(mod_dt, '%Y-%m-%d %T') as mod_dt	
+		from board_cate
+		where vendor_no = #{vendor_no} and board_cate_typ = #{board_cate_typ}
+		order by seq
+	</select>
+	
+	<select id="selectBoardDataList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select 
+			board_data_no
+			,board_no
+			,title
+			,content
+			,hit
+			, reg_id
+			, DATE_FORMAT(reg_dt, '%Y-%m-%d %T') as reg_dt
+			, mod_id
+			, DATE_FORMAT(mod_dt, '%Y-%m-%d %T') as mod_dt	
+		from board_data
+		where board_no = #{board_no}
+		order by reg_dt desc
+	</select>
+	
+	<select id="getBoardData" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select 
+			board_data_no
+			,board_no
+			,title
+			,content
+			,hit
+			, reg_id
+			, DATE_FORMAT(reg_dt, '%Y-%m-%d %T') as reg_dt
+			, mod_id
+			, DATE_FORMAT(mod_dt, '%Y-%m-%d %T') as mod_dt	
+		from board_data
+		where board_data_no = #{board_data_no}
+	</select>
+	
+	<select id="selectBoardHead" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select 
+			board_no
+			,board_head_no
+			,board_head_nm
+			,seq
+			, reg_id
+			, DATE_FORMAT(reg_dt, '%Y-%m-%d %T') as reg_dt
+			, mod_id
+			, DATE_FORMAT(mod_dt, '%Y-%m-%d %T') as mod_dt	
+		from board_head
+		where board_no = #{board_no}
+		order by reg_dt desc
+	</select>
+	
+	<select id="selectBoardMst" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select 
+			board_no
+			,board_nm
+			,seq
+			,board_cate_no
+			, reg_id
+			, DATE_FORMAT(reg_dt, '%Y-%m-%d %T') as reg_dt
+			, mod_id
+			, DATE_FORMAT(mod_dt, '%Y-%m-%d %T') as mod_dt	
+		from board_mst
+		where board_no = #{board_no}
+		order by seq
+	</select>
+	
+	<select id="selectBoardList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select 
+			board_no
+			,board_nm
+			,seq
+			,board_cate_no
+			, reg_id
+			, DATE_FORMAT(reg_dt, '%Y-%m-%d %T') as reg_dt
+			, mod_id
+			, DATE_FORMAT(mod_dt, '%Y-%m-%d %T') as mod_dt	
+		from board_mst
+		where board_cate_no = #{board_cate_no}
+		order by seq
+	</select>
+	
+	<select id="selectBoardPermiss" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select 
+			board_no
+			,staff_id
+			,read_yn
+			,write_yn
+			, reg_id
+			, DATE_FORMAT(reg_dt, '%Y-%m-%d %T') as reg_dt
+			, mod_id
+			, DATE_FORMAT(mod_dt, '%Y-%m-%d %T') as mod_dt	
+		from board_permiss
+		where board_no = #{board_no}
+	</select>
+
+	<insert id="insertBoardAttach" parameterType="java.util.HashMap">
+		insert into board_attach (
+			board_data_no
+			,att_seq
+			,filename_txt
+			,attachfile_txt
+			,download_cnt
+			,reg_id
+			,reg_dt
+		) values (
+			#{board_data_no}
+			,#{att_seq}
+			,#{filename_txt}
+			,#{attachfile_txt}
+			,0
+			, #{reg_id}
+			, now()
+		)
+	</insert>
+	
+	<insert id="insertBoardCate" parameterType="java.util.HashMap">
+		insert into board_cate (
+			board_cate_nm
+			,board_cate_typ
+			,vendor_no
+			,seq
+			,reg_id
+			,reg_dt		
+		) values (
+			#{board_cate_nm}
+			,#{board_cate_typ}
+			,#{vendor_no}
+			, (select ifnull(max(a.seq) + 1,0) from board_cate a)
+			, #{reg_id}
+			, now()
+		)
+	</insert>
+	
+	<insert id="insertBoardData" parameterType="java.util.HashMap">
+		insert into board_data (
+			board_data_no
+			,board_no
+			,title
+			,content
+			,hit
+			,reg_id
+			,reg_dt		
+		) values (
+			#{board_data_no}
+			,#{board_no}
+			,#{title}
+			,#{content}
+			,0
+			, #{reg_id}
+			, now()
+		)
+	</insert>
+	
+	<insert id="insertBoardHead" parameterType="java.util.HashMap">
+		insert into board_head (
+			board_no
+			,board_head_nm
+			,seq
+			,reg_id
+			,reg_dt		
+		) values (
+			#{board_no}
+			,#{board_head_nm}
+			,#{seq}
+			, #{reg_id}
+			, now()
+		)
+	</insert>
+	
+	<insert id="insertBoardMst" parameterType="java.util.HashMap">
+		insert into board_mst (
+			board_nm
+			,seq
+			,board_cate_no
+			,reg_id
+			,reg_dt		
+		) values (
+			#{board_nm}
+			, (select ifnull(max(a.seq) + 1,0) from board_mst a where a.board_cate_no = #{board_cate_no})
+			,#{board_cate_no}
+			, #{reg_id}
+			, now()
+		)
+	</insert>
+	
+	<insert id="insertBoardPermiss" parameterType="java.util.HashMap">
+		insert into board_permiss (
+			board_no
+			,staff_id
+			,read_yn
+			,write_yn
+			,reg_id
+			,reg_dt		
+		) values (
+			#{board_no}
+			,#{staff_id}
+			,#{read_yn}
+			,#{write_yn}
+			, #{reg_id}
+			, now()
+		)
+	</insert>
+
+	<!-- 배너 등록  -->
+	<insert id="insertBanner" parameterType="java.util.HashMap">
+		INSERT INTO vendor_banner_attach (
+			vendor_no
+			,filename_txt
+			,attachfile_txt
+			,reg_id
+			,reg_dt
+		) VALUES (
+			#{vendor_no}
+			,#{filename_txt}
+			,#{attachfile_txt}
+			,#{reg_id}
+			,NOW()
+		)
+	</insert>
+
+	
+	<update id="updateBoardAttach" parameterType="java.util.HashMap">
+		update board_attach set 
+			download_cnt = download_cnt + 1
+			, mod_id = #{mod_id}
+			, mod_dt = now()
+		where board_data_no = #{board_data_no} and att_seq = #{att_seq}
+	</update>
+	
+	<update id="updateBoardCate" parameterType="java.util.HashMap">
+		update board_cate set 
+			mod_id = #{mod_id}
+			, mod_dt = now()	
+			<if test='board_cate_nm != null and board_cate_nm != ""'>
+			,board_cate_nm = #{board_cate_nm}
+			</if>
+			<if test='seq != null and seq != ""'>
+			,seq = #{seq}
+			</if>
+		where board_cate_no = #{board_cate_no}
+	</update>
+	
+	<update id="updateBoardCateSeqPlus" parameterType="java.util.HashMap">
+		update board_cate set 
+			mod_id = #{mod_id}
+			, mod_dt = now()	
+			,seq = seq + 1
+		where board_cate_typ = #{board_cate_typ}
+		and seq = #{seq}
+	</update>
+	
+	<update id="updateBoardCateSeqMinus" parameterType="java.util.HashMap">
+		update board_cate set 
+			mod_id = #{mod_id}
+			, mod_dt = now()	
+			,seq = seq - 1
+		where board_cate_typ = #{board_cate_typ}
+		and seq = #{seq}
+	</update>
+	
+	<update id="updateBoardMstSeqPlus" parameterType="java.util.HashMap">
+		update board_mst set 
+			mod_id = #{mod_id}
+			, mod_dt = now()	
+			,seq = seq + 1
+		where seq = #{seq}
+		and board_cate_no = #{board_cate_no}
+	</update>
+	
+	<update id="updateBoardMstSeqMinus" parameterType="java.util.HashMap">
+		update board_mst set 
+			mod_id = #{mod_id}
+			, mod_dt = now()	
+			,seq = seq - 1
+		where seq = #{seq}
+		and board_cate_no = #{board_cate_no}
+	</update>
+	
+	<update id="updateBoardData" parameterType="java.util.HashMap">
+		update board_data set 
+			title = #{board_head_no}
+			,content = #{board_head_no}
+			,hit = #{board_head_no}
+			, mod_id = #{mod_id}
+			, mod_dt = now()	
+		where board_data_no = #{board_data_no}
+	</update>
+	
+	<update id="updateBoardHead" parameterType="java.util.HashMap">
+		update board_head set 
+			board_head_nm = #{board_head_nm}
+			<if test='seq != null and seq != ""'>
+			,seq = #{seq}
+			</if>
+			, mod_id = #{mod_id}
+			, mod_dt = now()	
+		where board_head_no = #{board_head_no}
+	</update>
+	
+	<update id="updateBoardMst" parameterType="java.util.HashMap">
+		update board_mst set 
+			mod_id = #{mod_id}
+			, mod_dt = now()	
+			<if test='board_nm != null and board_nm != ""'>
+			, board_nm = #{board_nm}
+			</if>
+			<if test='seq != null and seq != ""'>
+			,seq = #{seq}
+			</if>
+		where board_no = #{board_no}
+	</update>
+	
+	<update id="updateBoardPermiss" parameterType="java.util.HashMap">
+		update board_permiss set 
+			read_yn = #{read_yn}
+			,write_yn = #{write_yn}
+			, mod_id = #{mod_id}
+			, mod_dt = now()	
+		where board_no = #{board_no} and staff_id = #{staff_id}
+	</update>
+
+	<delete id="deleteBoardAttach" parameterType="java.util.HashMap">
+		delete from board_attach where board_data_no = #{board_data_no} and att_seq = #{att_seq}
+	</delete>
+	
+	<delete id="deleteBoardCate" parameterType="java.util.HashMap">
+		delete from board_cate where board_cate_no = #{board_cate_no}
+	</delete>
+	
+	<delete id="deleteBoardData" parameterType="java.util.HashMap">
+		delete from board_data where board_data_no = #{board_data_no}
+	</delete>
+	
+	<delete id="deleteBoardHead" parameterType="java.util.HashMap">
+		delete from board_head where board_head_no = #{board_head_no}
+	</delete>
+	
+	<delete id="deleteBoardMst" parameterType="java.util.HashMap">
+		delete from board_mst
+		<choose>
+			<when test='board_no != null and board_no != ""'>
+			where board_no = #{board_no}
+			</when>
+			<otherwise>
+			where board_cate_no = #{board_cate_no}
+			</otherwise>
+		</choose>		
+	</delete>
+	
+	<delete id="deleteBoardPermiss" parameterType="java.util.HashMap">
+		delete from board_permiss where board_no = #{board_no} and staff_id = #{staff_id}
+	</delete>
+
+</mapper>

@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cu.cuveDao">
+
+	<insert id="getVendorSeq" parameterType="com.nn21.dto.SequenceDto">
+		insert into sq_vendor(seq) values(0)
+		<selectKey keyProperty="seq" resultType="int" >select last_insert_id()</selectKey>
+	</insert>
+
+	<select id="getVendorCode" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select concat(#{vendor_cd1}, lpad(count(0) + 1,4,'0')) as vendor_cd
+			, #{vendor_cd1} as vendor_cd1
+			, lpad(count(0) + 1,4,'0') as vendor_cd2 
+		from ven_vendorinfo
+		where vendor_cd like CONCAT(#{vendor_cd1},'%')
+	</select>
+	
+
+	<select id="selectVendorList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+
+			SELECT v.vendor_no
+				,v.vendor_nm
+				,v.vendor_nm_eng
+				,v.vendor_typ
+				,case when v.vendor_typ = '2' then '고객사' when v.vendor_typ = '3' then '고객사' when v.vendor_typ = '4' then '관세사' when v.vendor_typ = '5' then '창고' when v.vendor_typ = '6' then '운송사' end as vendor_typ_nm
+				,v.ceo_nm
+				,v.biz_num_txt
+				,v.tax_cd
+				,v.business_type_txt
+				,v.business_txt
+				,v.tel_txt
+				,v.fax_txt
+				,v.email_txt
+				,v.homepage_url
+				,v.item_txt
+				,v.charge_name_nm
+				,v.charge_tel_txt
+				,v.charge_mobil_txt
+				,v.charge_email_txt
+				,v.zipnum_cd
+				,v.basadd_txt
+				,v.dtladd_txt
+				,v.road_basadd_txt
+				,v.road_dtladd_txt
+				,v.stats_typ_cd
+				, v.reg_id
+				, DATE_FORMAT(v.reg_dt, '%Y-%m-%d %T') as reg_dt
+				, v.mod_id
+				, DATE_FORMAT(v.mod_dt, '%Y-%m-%d %T') as mod_dt
+			FROM ven_vendorinfo v
+			WHERE 1=1
+			and v.vendor_typ = '2'
+			order by v.vendor_nm			
+	</select>
+
+	<select id="selectPartnerList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+
+			SELECT v.vendor_no
+				,v.vendor_nm
+				, v.upvendor_no
+				, v.upvendor_nm
+				,v.vendor_nm_eng
+				,v.vendor_typ
+				,case when v.vendor_typ = '2' then '고객사' when v.vendor_typ = '3' then '고객사' when v.vendor_typ = '4' then '관세사' when v.vendor_typ = '5' then '창고' when v.vendor_typ = '6' then '운송사' end as vendor_typ_nm
+				,v.ceo_nm
+				,v.biz_num_txt
+				,v.tax_cd
+				,v.business_type_txt
+				,v.business_txt
+				,v.tel_txt
+				,v.fax_txt
+				,v.email_txt
+				,v.homepage_url
+				,v.item_txt
+				,v.charge_name_nm
+				,v.charge_tel_txt
+				,v.charge_mobil_txt
+				,v.charge_email_txt
+				,v.zipnum_cd
+				,v.basadd_txt
+				,v.dtladd_txt
+				,v.road_basadd_txt
+				,v.road_dtladd_txt
+				,v.stats_typ_cd
+				, v.reg_id
+				, DATE_FORMAT(v.reg_dt, '%Y-%m-%d %T') as reg_dt
+				, v.mod_id
+				, DATE_FORMAT(v.mod_dt, '%Y-%m-%d %T') as mod_dt
+			FROM ven_vendorinfo v
+			WHERE 1=1
+			and v.upvendor_no = #{vendor_no}
+			<if test='vendor_typ != null and vendor_typ != ""'>
+			and v.vendor_typ = #{vendor_typ}
+			</if>
+			order by v.vendor_nm			
+	</select>
+	
+	<select id="selectPartnerList4Customer" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+			SELECT v.vendor_no
+				,v.vendor_cd
+				,v.vendor_nm
+				,v.vendor_nm_eng
+				,v.vendor_typ
+				,case v.vendor_typ when '2' then '지사' 
+					when '3' then '고객사' 
+					when '4' then '관세사' 
+					when '5' then '창고' 
+					when '6' then '운송사' 
+					when '7' then '무역회사'
+					when '8' then '통관회사'
+				end as vendor_typ_nm
+				, ifnull(v.upvendor_no, '') as rel_vendor_no
+				, ifnull((select i.vendor_nm_eng from ven_vendorinfo i where i.vendor_no = v.upvendor_no), '') as rel_vendor_nm_eng
+				, ifnull((select i.vendor_nm from ven_vendorinfo i where i.vendor_no = v.upvendor_no), '') as rel_vendor_nm
+				,v.ceo_nm
+				,v.biz_num_txt
+				,v.tax_cd
+				,v.business_type_txt
+				,v.business_txt
+				,v.tel_txt
+				,v.fax_txt
+				,v.email_txt
+				,v.homepage_url
+				,v.item_txt
+				,v.charge_name_nm
+				,v.charge_tel_txt
+				,v.charge_mobil_txt
+				,v.charge_email_txt
+				,v.zipnum_cd
+				,v.basadd_txt
+				,v.dtladd_txt
+				,v.road_basadd_txt
+				,v.road_dtladd_txt
+				,v.stats_typ_cd
+				, v.reg_id
+				, DATE_FORMAT(v.reg_dt, '%Y-%m-%d %T') as reg_dt
+				, v.mod_id
+				, DATE_FORMAT(v.mod_dt, '%Y-%m-%d %T') as mod_dt
+			FROM ven_vendorinfo v
+			inner join ven_vendor_relation r on v.vendor_no = r.rel_vendor_no 	
+			WHERE v.vendor_typ = 3
+			and r.vendor_no = #{vendor_no}
+			order by v.vendor_no desc		
+	</select>
+	
+	<select id="selectCustomerList4system" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+			SELECT v.vendor_no
+				,v.vendor_nm
+				,v.vendor_nm_eng
+				,v.vendor_typ
+				,case when v.vendor_typ = '2' then '고객사' when v.vendor_typ = '3' then '고객사' when v.vendor_typ = '4' then '관세사' when v.vendor_typ = '5' then '창고' when v.vendor_typ = '6' then '운송사' end as vendor_typ_nm
+				, ifnull(v.upvendor_no, '') as rel_vendor_no
+				, ifnull((select i.vendor_nm_eng from ven_vendorinfo i where i.vendor_no = v.upvendor_no), '') as rel_vendor_nm_eng
+				, ifnull((select i.vendor_nm from ven_vendorinfo i where i.vendor_no = v.upvendor_no), '') as rel_vendor_nm
+				,v.ceo_nm
+				,v.biz_num_txt
+				,v.tax_cd
+				,v.business_type_txt
+				,v.business_txt
+				,v.tel_txt
+				,v.fax_txt
+				,v.email_txt
+				,v.homepage_url
+				,v.item_txt
+				,v.charge_name_nm
+				,v.charge_tel_txt
+				,v.charge_mobil_txt
+				,v.charge_email_txt
+				,v.zipnum_cd
+				,v.basadd_txt
+				,v.dtladd_txt
+				,v.road_basadd_txt
+				,v.road_dtladd_txt
+				,v.stats_typ_cd
+				, v.reg_id
+				, DATE_FORMAT(v.reg_dt, '%Y-%m-%d %T') as reg_dt
+				, v.mod_id
+				, DATE_FORMAT(v.mod_dt, '%Y-%m-%d %T') as mod_dt
+			FROM ven_vendorinfo v
+			WHERE v.vendor_typ = '3'
+			<if test='vendor_no != null and vendor_no != ""'>
+			and v.upvendor_no = #{vendor_no}
+			</if>
+			order by v.vendor_nm			
+	</select>
+	
+	<select id="selectCoopCompList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+
+			SELECT v.vendor_no
+				,v.vendor_nm
+				,v.vendor_nm_eng
+				,v.vendor_typ
+				,case when v.vendor_typ = '2' then '고객사' when v.vendor_typ = '3' then '고객사' when v.vendor_typ = '4' then '관세사' when v.vendor_typ = '5' then '창고' 
+				when v.vendor_typ = '6' then '운송사' when v.vendor_typ = '7' then '무역회사' when v.vendor_typ = '8' then '통관회사' end as vendor_typ_nm
+				,v.ceo_nm
+				,v.biz_num_txt
+				,v.tax_cd
+				,v.business_type_txt
+				,v.business_txt
+				,v.tel_txt
+				,v.fax_txt
+				,v.email_txt
+				,v.homepage_url
+				,v.item_txt
+				,v.charge_name_nm
+				,v.charge_tel_txt
+				,v.charge_mobil_txt
+				,v.charge_email_txt
+				,v.zipnum_cd
+				,v.basadd_txt
+				,v.dtladd_txt
+				,v.road_basadd_txt
+				,v.road_dtladd_txt
+				,v.stats_typ_cd
+				, v.reg_id
+				, DATE_FORMAT(v.reg_dt, '%Y-%m-%d %T') as reg_dt
+				, v.mod_id
+				, DATE_FORMAT(v.mod_dt, '%Y-%m-%d %T') as mod_dt
+			FROM ven_vendorinfo v
+			WHERE v.upvendor_no = #{vendor_no}
+			<if test='vendor_nm != null and vendor_nm != ""'>
+			and (v.vendor_nm like CONCAT('%',#{vendor_nm},'%') or v.vendor_nm_eng like CONCAT('%',#{vendor_nm},'%'))
+			</if>
+			<if test='tel_txt != null and tel_txt != ""'>
+			and v.tel_txt like CONCAT('%',#{tel_txt},'%')
+			</if>
+
+
+			<choose>
+				<when test='vendor_typ != null and vendor_typ != ""'>
+				and v.vendor_typ = #{vendor_typ}
+				</when>
+				<otherwise>
+				and v.vendor_typ in ('4','5','6','7','8')
+				</otherwise>
+			</choose>
+		
+			order by v.reg_dt desc			
+	</select>
+	
+	<select id="selectBusinessKindList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+
+		select code
+		,upcode
+		,code_nm
+		,upcode_nm
+		,sort_seq
+		, reg_id
+		, DATE_FORMAT(reg_dt, '%Y-%m-%d %T') as reg_dt
+		, mod_id
+		, DATE_FORMAT(mod_dt, '%Y-%m-%d %T') as mod_dt
+		from business_kind
+		where upcode = #{upcode}
+		order by sort_seq
+
+	</select>
+
+	 <resultMap type="java.util.HashMap" id="partnerDetailResult">
+	 	<id property="vendor_no"				column="vendor_no" />
+		<result property="vendor_nm"			column="vendor_nm" />
+		<result property="class_cd"				column="class_cd" />
+		<result property="owner_nm"				column="owner_nm" />
+		<result property="biz_num_txt"			column="biz_num_txt" />
+		<result property="tax_cd"				column="tax_cd" />
+		<result property="business_type_txt"	column="business_type_txt" />
+		<result property="business_txt"			column="business_txt" />
+		<result property="tel_txt"				column="tel_txt" />
+		<result property="charge_name_nm"		column="charge_name_nm" />
+		<result property="charge_tel_txt"		column="charge_tel_txt" />
+		<result property="charge_mobil_txt"		column="charge_mobil_txt" />
+		<result property="charge_email_txt"		column="charge_email_txt" />
+		<result property="zipnum_typ"			column="zipnum_typ" />
+		<result property="zipnum_cd"			column="zipnum_cd" />
+		<result property="basadd_txt"		column="basadd_txt" />
+		<result property="dtladd_txt"		column="dtladd_txt" />
+		<result property="road_basadd_txt"		column="road_basadd_txt" />
+		<result property="road_dtladd_txt"		column="road_dtladd_txt" />
+		<result property="zipnum_seq"			column="zipnum_seq" />
+		<result property="building_no"			column="building_no" />
+		<result property="stats_typ_cd"			column="stats_typ_cd" />
+		<result property="biz_start_ymd"		column="biz_start_ymd" />
+		<result property="biz_end_ymd"			column="biz_end_ymd" />
+		<result property="charge_rat"			column="charge_rat" />
+		<result property="charge_typ_cd"		column="charge_typ_cd" />
+		<result property="bank_cd"				column="bank_cd" />
+		<result property="bank_acc_txt"			column="bank_acc_txt" />
+		<result property="depositor_nm"			column="depositor_nm" />
+		<result property="penalty_typ"			column="penalty_typ" />
+		<result property="trans_restore_yn"		column="trans_restore_yn" />
+		<result property="sms_yn"				column="sms_yn" />
+		<result property="first_cal_ymd"		column="first_cal_ymd" />
+		<result property="bef_vendor_no"		column="bef_vendor_no" />
+		<result property="aft_charge_typ_cd"	column="aft_charge_typ_cd" />
+		<result property="aft_charge_typ_nm"	column="aft_charge_typ_nm" />
+		<result property="pg_id"				column="pg_id" />
+	</resultMap>
+
+	<select id="selectPartnerDetail" parameterType="java.util.HashMap" resultMap="partnerDetailResult">
+		select * from ven_vendorinfo
+		where vendor_no = #{vendor_no}
+	</select>
+
+	<insert id="insertPartnerInfo" parameterType="java.util.HashMap">
+	insert into ven_vendorinfo(vendor_no
+		,vendor_nm
+		,vendor_cd
+		,upvendor_no
+		,upvendor_nm
+		,vendor_nm_eng
+		,vendor_typ
+		,ceo_nm
+		,biz_num_txt
+		,tax_cd
+		,business_type_txt
+		,business_txt
+		,tel_txt
+		,fax_txt
+		,email_txt
+		,homepage_url
+		,item_txt
+		,zipnum_cd
+		,basadd_txt
+		,dtladd_txt
+		,road_basadd_txt
+		,road_dtladd_txt
+		,stats_typ_cd
+		,charge_yn
+		,reg_id
+		,reg_dt
+	) values (
+		#{seq}
+		,#{vendor_nm}
+		,#{vendor_cd}
+		,#{upvendor_no}
+		,#{upvendor_nm}
+		,#{vendor_nm_eng}
+		,#{vendor_typ}
+		,#{ceo_nm}
+		,#{biz_num_txt}
+		,#{tax_cd}
+		,#{business_type_txt}
+		,#{business_txt}
+		,#{tel_txt}
+		,#{fax_txt}
+		,#{email_txt}
+		,#{homepage_url}
+		,#{item_txt}
+		,#{zipnum_cd}
+		,#{basadd_txt}
+		,#{dtladd_txt}
+		,#{road_basadd_txt}
+		,#{road_dtladd_txt}
+		,#{stats_typ_cd}
+		,#{charge_yn}
+		,#{reg_id}
+		,now()
+      )
+	</insert>
+	
+	
+	<insert id="insertVendorRelation" parameterType="java.util.HashMap">
+	insert into ven_vendor_relation(
+		vendor_no
+		,rel_vendor_no
+		,use_yn
+		,reg_id
+		,reg_dt
+	) values (
+		#{vendor_no}
+		,#{rel_vendor_no}
+		,#{use_yn}
+		,#{reg_id}
+		,now()
+      )
+	</insert>
+	
+	<update id="updatePartnerInfo" parameterType="java.util.HashMap">
+	update ven_vendorinfo set
+		vendor_nm = #{vendor_nm}
+		,vendor_nm_eng = #{vendor_nm_eng}
+		,ceo_nm = #{ceo_nm}
+		,biz_num_txt = #{biz_num_txt}
+		,tax_cd = #{tax_cd}
+		,business_type_txt = #{business_type_txt}
+		,business_txt = #{business_txt}
+		,tel_txt = #{tel_txt}
+		,fax_txt = #{fax_txt}
+		,email_txt = #{email_txt}
+		,homepage_url = #{homepage_url}
+		,item_txt = #{item_txt}
+		,zipnum_cd = #{zipnum_cd}
+		,basadd_txt = #{basadd_txt}
+		,dtladd_txt = #{dtladd_txt}
+		,road_basadd_txt = #{road_basadd_txt}
+		,road_dtladd_txt = #{road_dtladd_txt}
+		,stats_typ_cd = #{stats_typ_cd}
+		,mod_id = #{mod_id}
+		,mod_dt = now()
+	where vendor_no = #{vendor_no}
+	</update>
+	
+	<update id="updatePartnerInfoChargeYn" parameterType="java.util.HashMap">
+	update ven_vendorinfo set
+		charge_yn = #{charge_yn}
+		,mod_id = #{mod_id}
+		,mod_dt = now()
+	where vendor_no = #{vendor_no}
+	</update>
+	
+	<update id="updatePartnerInfoUpvendor" parameterType="java.util.HashMap">
+	update ven_vendorinfo set
+		upvendor_no = #{upvendor_no}
+		,upvendor_nm = #{upvendor_nm}
+		,mod_id = #{mod_id}
+		,mod_dt = now()
+	where vendor_no = #{vendor_no}
+	</update>
+
+
+</mapper>

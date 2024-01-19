@@ -1,0 +1,83 @@
+@charset "utf-8";
+input[type="text"] {padding:2px 0 3px 5px;}
+.sky button.sky {display:inline !important; line-height:18px;}
+/* select {height:24px; margin-top:3px;} */
+select#chang_id {margin-top:3px;}
+/* .search_wrap .search_st select {height:18px; margin:4px 0 0 0; border:0 none;} */
+.search_wrap .search_st select {margin-top:0;}
+.header-wrap .search-area .btn-area {height:25px;}
+.content_wrap .history .header {font-size:12px;}
+ul.mileage_ul > li > span.right_btn > div {position:relative; z-index:1000; background:url(../images/bg_attached_file.gif) no-repeat !important;}
+ul.mileage_ul > li > span.right_btn > div > input {background:blue !important;}
+button#btnMod {margin-top:-3px; margin-left:4px;}
+button#btnMod.sky.add {margin-top:0;}
+#partnerThumbDiv div.header {background-images:none !important;}
+p.sel_adj.addD select {margin-top:-2px;}
+td.addD2 span {display:inline-block; height:32px; line-height:32px;}
+td.addD2 select {margin-top:6px;}
+dd.cols input.iptW3 {width:387px;}
+/* div.btn_add.addDbtn {margin-top:-20px;} */
+div.addB03 button {float:left;}
+div.tit_area.mt20 > h3 {background:none; color:#666; font-size:100%; padding-left:0;}
+h3.header.add {background:none; color:#666; font-size:100%; padding-left:0;}
+tr.imgTr.mapTr td > div {background:url(../images/bg_attached_file.gif) no-repeat !important;}
+
+/* h3 백그라운드 처리 */
+div.lypopWrap.lypop_md > div.header {background-image:none !important; background-color:#3a769f;}
+div.lypopWrap.lypop_bnimg > div.header {background-image:none !important; background-color:#3a769f;}
+div.lypopWrap.lypop_sell > div.header,
+div.lypopWrap.lypop_prosumInfo > div.header,
+div#popupLayer.lypopWrap > div.header
+{background-image:none !important; background-color:#3a769f;}
+
+/* md 팝업 */
+td.edit_td > iframe {height:450px !important;}
+
+/* lnb */
+#categoryTree li.last {min-height:0;}
+
+/* 슬라이드 스크립트 오류대응 */
+div.tbl_wrap.slideBlock {overflow:hidden !important; position:relative;}
+div.report.addB03 > #btnUploadWayBill {margin-right:2px;}
+
+button#btnDup.sky.add02 {width:72px; height:24px; padding:0 !important; margin:1px 0 0 4px;}
+button#btnPassReset.sky.add03 {width:59px; height:24px; padding:0 !important; margin:1px 0 0 4px;}
+
+.inb_area .admin_menu li .admin_wrap li ul {color:#fff; font-weight:bold; position:relative;}
+
+/* 필수 입력 항목 */
+/* span.starMark {text-indent:0; display:inline; zoom:1; font-size:0; line-height:0; width:5px; height:6px; background:url(../images/bul_add.gif) no-repeat; margin-right:3px;} */
+span.starMark {text-indent:0; display:block; float:left; font-size:0; line-height:0; width:5px; height:20px; background:background:url(../images/bul_add.gif) no-repeat; margin-right:3px;}
+
+tr.addpadding th {padding:0 !important; margin:0 !important;}
+tr.addpadding td {padding:0 !important; margin:0 !important;}
+
+/* 상품가격 예약관리 */
+#evn_st_typ {width:394px !important;}
+
+/* 상품가격예약 등록-수정 */
+table.tbl_type2.addD2 tr td input#subject_txt {width:390px !important;}
+table.tbl_type2.addD2 tr td input#discount_amt {width:390px !important;}
+
+/* 이미지 업로드 버튼 공통적용 ir7용 */
+tr.imgTr.mapTr > td > div {background:none !important;}
+
+input#uploadFile,
+input#uploadExcelFile,
+input#uploadImgFile {width:22px !important; height:32px !important; position:absolute; left:-10px; top:-10px;}
+
+input.file.file_1 {width:143px !important;}
+
+.inb_area .favorites li {margin-top:-3px;}
+
+
+
+
+
+
+
+
+
+
+
+

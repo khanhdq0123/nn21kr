@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CUTR01Service">
+ 
+	<select id="getSearch" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select pl_no
+			, route_no
+			, pl_nm
+			, unit_cd
+			, exw
+			, ddp
+			, cnf
+			, fob
+			, amt
+			, reg_id
+			, DATE_FORMAT(reg_dt, '%Y-%m-%d %T') as reg_dt
+			, mod_id
+			, DATE_FORMAT(mod_dt, '%Y-%m-%d %T') as mod_dt
+		from pl_mst
+		where route_no = #{route_no}
+	</select>
+
+	<insert id="insert" parameterType="java.util.HashMap">
+		insert into pl_mst (
+			route_no
+			,pl_nm
+			,unit_cd
+			,exw
+			,ddp
+			,cnf
+			,fob
+			,amt
+			,reg_id
+			,reg_dt
+		) VALUES (
+			#{route_no}
+			, #{pl_nm}
+			, #{unit_cd}
+			, #{exw}
+			, #{ddp}
+			, #{cnf}
+			, #{fob}
+			, #{amt}
+			, #{reg_id}
+			, now()
+		)
+	</insert>
+
+	<update id="update" parameterType="java.util.HashMap">
+		update pl_mst 
+		set pl_nm = #{pl_nm}
+			, unit_cd = #{unit_cd}
+			, exw = #{exw}
+			, ddp = #{ddp}
+			, cnf = #{cnf}
+			, fob = #{fob}
+			, amt = #{amt}
+			, mod_id = #{mod_id}
+			, mod_dt = now()
+		where pl_no = #{pl_no}
+	</update>
+	
+	<delete id="delete" parameterType="java.util.HashMap">
+		delete from pl_mst where pl_no = #{pl_no}
+	</delete>
+
+</mapper>

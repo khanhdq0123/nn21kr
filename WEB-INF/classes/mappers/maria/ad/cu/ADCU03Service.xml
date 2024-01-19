@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ADCU03Service">
+ 
+ 	<resultMap id="vendorStatMap" type="hashMap">
+ 		<result property="vendor_nm"		column="vendor_nm" />
+ 		<result property="vendor_no"		column="vendor_no" />
+ 		<result property="comp_nm"		column="comp_nm" />
+ 		<result property="comp_no"		column="comp_no" />
+ 		<result property="class_cd"		column="class_cd" />
+		<result property="staff_info"	column="staff_info" jdbcType="VARCHAR" javaType="String" />
+		<result property="vendor_staff_info"	column="vendor_staff_info" jdbcType="VARCHAR" javaType="String" />
+	</resultMap>
+
+	<select id="getSearch" parameterType="java.util.HashMap" resultMap="vendorStatMap">
+		select concat('[',ifnull(a.vendor_cd,''),']  ', a.vendor_nm) as vendor_nm
+			, a.vendor_no
+			, a.vendor_cd
+			, concat('[',ifnull(b.vendor_cd,'미지정'),']  ', b.vendor_nm) as comp_nm
+			, b.vendor_no as comp_no
+			, GROUP_CONCAT('[',d.code_nm,'] ',c.staff_nm, '(',c.staff_id,')' SEPARATOR ',   ') AS staff_info 
+			, (
+				select group_concat(ss.staff_nm,' (',ss.staff_id,')') from sys_staffinfo ss where ss.vendor_no = a.vendor_no
+			) as vendor_staff_info
+		from ven_vendorinfo a
+		left join ven_vendorinfo b on a.vendor_no = b.upvendor_no and b.vendor_typ = 3
+		left join sys_staffinfo c on b.vendor_no = c.vendor_no
+		left join sys_codeinfo d on c.job_cd = d.code_cd
+		where a.vendor_typ = 2
+		group by a.vendor_nm,a.vendor_no,a.vendor_cd,b.vendor_nm,b.vendor_no
+		order by a.vendor_no, b.vendor_no, c.job_cd
+	</select>
+	
+	<select id="getSearchDtl" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select e.exch_no
+			, e.exch_cd
+			, e.inp_dt
+			, e.type
+			, e.foreign_cost
+			, e.local_curr_exh_cost
+			, e.start_dt
+			, e.end_dt
+		from exchange_rate e
+		where e.exch_no = #{exch_no}
+	</select>
+	
+	<insert id="insert" parameterType="java.util.HashMap">
+		insert into exchange_rate (
+			exch_cd
+			, inp_dt
+			, type
+			, foreign_cost
+			, local_curr_exh_cost
+			, start_dt
+			, end_dt
+		) VALUES (
+			#{exch_cd}
+			, #{inp_dt}
+			, #{type}
+			, #{foreign_cost}
+			, #{local_curr_exh_cost}
+			, #{start_dt}
+			, #{end_dt}
+		)
+	</insert>
+
+	<update id="update" parameterType="java.util.HashMap">
+		update exchange_rate 
+		set exch_cd = #{exch_cd}
+			, inp_dt = #{inp_dt}
+			, type = #{type}
+			, foreign_cost = #{foreign_cost}
+			, local_curr_exh_cost = #{local_curr_exh_cost}
+			, start_dt = #{start_dt}
+			, end_dt = #{end_dt}
+		where exch_no = #{exch_no}
+	</update>
+	
+	<delete id="delete" parameterType="java.util.HashMap">
+		delete from exchange_rate where exch_no = #{exch_no}
+	</delete>
+
+</mapper>

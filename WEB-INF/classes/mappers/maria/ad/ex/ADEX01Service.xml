@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ADEX01Service">
+ 
+	<select id="getSearch" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select exch_no
+			,app_dt
+			,cost_usd
+			,cost_cny
+			,cost_vnd
+			,cost_jpy
+			,cost_hkd
+			,cost_eur
+			,cost_idr
+			,cost_php
+			,cost_thb
+			,unit_usd
+			,unit_cny
+			,unit_vnd
+			,unit_jpy
+			,unit_hkd
+			,unit_eur
+			,unit_idr
+			,unit_php
+			,unit_thb
+			,reg_id
+			,DATE_FORMAT(reg_dt, '%Y-%m-%d %T') as reg_dt
+			,mod_id
+			,DATE_FORMAT(mod_dt, '%Y-%m-%d %T') as mod_dt
+		from exchange_rate
+		where 1=1
+		<if test='regdt_from != null and regdt_from != "" and regdt_to != null and regdt_to != ""'>
+	    	AND DATE_FORMAT(reg_dt,'%Y-%m-%d') BETWEEN #{regdt_from} AND #{regdt_to}
+	    </if>		
+		order by app_dt desc
+		limit 100
+	</select>
+	
+	<select id="getSearchDtl" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select  exch_no
+			,app_dt
+			,cost_usd
+			,cost_cny
+			,cost_vnd
+			,cost_jpy
+			,cost_hkd
+			,cost_eur
+			,cost_idr
+			,cost_php
+			,cost_thb
+			,unit_usd
+			,unit_cny
+			,unit_vnd
+			,unit_jpy
+			,unit_hkd
+			,unit_eur
+			,unit_idr
+			,unit_php
+			,unit_thb
+			,reg_id
+			,reg_dt
+			,mod_id
+			,mod_dt
+		from exchange_rate
+		where exch_no = #{exch_no}
+	</select>
+
+	<select id="getRecentExchangeRate" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select exch_no
+			,app_dt
+			,cost_usd
+			,cost_cny
+			,cost_vnd
+			,cost_jpy
+			,cost_hkd
+			,cost_eur
+			,cost_idr
+			,cost_php
+			,cost_thb
+			,unit_usd
+			,unit_cny
+			,unit_vnd
+			,unit_jpy
+			,unit_hkd
+			,unit_eur
+			,unit_idr
+			,unit_php
+			,unit_thb
+			,reg_id
+			,DATE_FORMAT(reg_dt, '%Y-%m-%d %T') as reg_dt
+			,mod_id
+			,DATE_FORMAT(mod_dt, '%Y-%m-%d %T') as mod_dt
+		from exchange_rate
+		where app_dt = #{app_dt}
+		order by reg_dt desc
+		limit 1
+	</select>
+
+	<select id="getRecentCustomsExchangeRate" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select  customs_exch_no
+			,app_st_dt
+			,app_ed_dt
+			,cost_usd
+			,cost_cny
+			,cost_vnd
+			,cost_jpy
+			,cost_hkd
+			,cost_eur
+			,cost_idr
+			,cost_php
+			,cost_thb
+			,unit_usd
+			,unit_cny
+			,unit_vnd
+			,unit_jpy
+			,unit_hkd
+			,unit_eur
+			,unit_idr
+			,unit_php
+			,unit_thb
+			,reg_id
+			,reg_dt
+			,mod_id
+			,mod_dt
+		from customs_exchange_rate
+		where  #{app_dt} between app_st_dt and app_ed_dt
+		order by app_st_dt desc
+		limit 1
+	</select>
+
+	<insert id="insert" parameterType="java.util.HashMap">
+		insert into exchange_rate (
+			app_dt
+			,cost_usd
+			,cost_cny
+			,cost_vnd
+			,cost_jpy
+			,cost_hkd
+			,cost_eur
+			,cost_idr
+			,cost_php
+			,cost_thb
+			,unit_usd
+			,unit_cny
+			,unit_vnd
+			,unit_jpy
+			,unit_hkd
+			,unit_eur
+			,unit_idr
+			,unit_php
+			,unit_thb
+			,reg_id
+			,reg_dt
+		) VALUES (
+			 #{app_dt}
+			, #{cost_usd}
+			, #{cost_cny}
+			, #{cost_vnd}
+			, #{cost_jpy}
+			, #{cost_hkd}
+			, #{cost_eur}
+			, #{cost_idr}
+			, #{cost_php}
+			, #{cost_thb}
+			, #{unit_usd}
+			, #{unit_cny}
+			, #{unit_vnd}
+			, #{unit_jpy}
+			, #{unit_hkd}
+			, #{unit_eur}
+			, #{unit_idr}
+			, #{unit_php}
+			, #{unit_thb}
+			, #{reg_id}
+			, now()
+		)
+	</insert>
+
+	<update id="update" parameterType="java.util.HashMap">
+		update exchange_rate 
+		set app_dt = #{app_dt}
+			,cost_usd = #{cost_usd}
+			,cost_cny = #{cost_cny}
+			,cost_vnd = #{cost_vnd}
+			,cost_jpy = #{cost_jpy}
+			,cost_hkd = #{cost_hkd}
+			,cost_eur = #{cost_eur}
+			,cost_idr = #{cost_idr}
+			,cost_php = #{cost_php}
+			,cost_thb = #{cost_thb}
+			,unit_usd = #{unit_usd}
+			,unit_cny = #{unit_cny}
+			,unit_vnd = #{unit_vnd}
+			,unit_jpy = #{unit_jpy}
+			,unit_hkd = #{unit_hkd}
+			,unit_eur = #{unit_eur}
+			,unit_idr = #{unit_idr}
+			,unit_php = #{unit_php}
+			,unit_thb = #{unit_thb}
+			,mod_id = #{mod_id}
+			,mod_dt = now()
+		where exch_no = #{exch_no}
+	</update>
+	
+	<delete id="delete" parameterType="java.util.HashMap">
+		delete from exchange_rate where exch_no = #{exch_no}
+	</delete>
+
+</mapper>

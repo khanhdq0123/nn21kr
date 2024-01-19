@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cu.custDao">
+
+	
+	<select id="selectStaffList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT a.staff_id
+		,a.groupauth_id
+		,a.vendor_no
+		,a.login_id
+		,a.staff_typ
+		,a.passwd_txt
+		,a.staff_enm
+		,a.staff_nm
+		,a.nick_nm
+		,a.job_cd
+		,(select code_nm from sys_codeinfo where code_cd = a.job_cd) as job_nm
+		,a.position_cd
+		,(select code_nm from sys_codeinfo where code_cd = a.position_cd) as position_nm
+		,a.tel_txt
+		,a.mobile_txt
+		,a.email_txt
+		,a.lastlogin_dt
+		,a.login_cnt
+		,a.login_fail_cnt
+		,a.pwd_reset_yn
+		,a.pwd_reset_dt
+		,a.use_yn
+		,a.comment_txt
+		,a.conn_ip_txt
+		,a.conn_yn
+		,a.conn_dt
+		,a.del_yn
+		,a.reg_id
+		,SUBSTRING(DATE_FORMAT (a.reg_dt,  '%Y-%m-%d %T'), 1, 16) AS reg_dt
+		,a.mod_id
+		,SUBSTRING(DATE_FORMAT (a.mod_dt,  '%Y-%m-%d %T'), 1, 16) AS mod_dt
+		, b.groupauth_nm
+		, c.vendor_nm
+		, (select case when count(*) > 1  then concat(concat(sc.code_nm,' / ',s.sns_id), ' 외', count(0) - 1,'개') else concat(sc.code_nm,' / ',s.sns_id) end  
+			from sys_staff_sns s
+			inner join sys_codeinfo sc on s.sns_typ = sc.code_cd 
+			where s.staff_id = a.staff_id
+		) as sns
+		FROM sys_staffinfo a
+		inner join sys_groupauth b on a.groupauth_id = b.groupauth_id
+		inner join ven_vendorinfo c on. a.vendor_no = c.vendor_no
+		where 1=1
+		<if test='vendor_typ != null and vendor_typ != ""'>
+		and c.vendor_typ = #{vendor_typ}
+		</if>
+		<if test='vendor_no != null and vendor_no != ""'>
+		and a.vendor_no = #{vendor_no}
+		</if>
+	</select>
+	
+	<select id="selectStaffList2" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT a.staff_id
+		,a.groupauth_id
+		,a.vendor_no
+		,a.login_id
+		,a.staff_typ
+		,a.passwd_txt
+		,a.staff_enm
+		,a.staff_nm
+		,a.nick_nm
+		,a.job_cd
+		,(select code_nm from sys_codeinfo where code_cd = a.job_cd) as job_nm
+		,a.position_cd
+		,(select code_nm from sys_codeinfo where code_cd = a.position_cd) as position_nm
+		,a.tel_txt
+		,a.mobile_txt
+		,a.email_txt
+		,a.lastlogin_dt
+		,a.login_cnt
+		,a.login_fail_cnt
+		,a.pwd_reset_yn
+		,a.pwd_reset_dt
+		,a.use_yn
+		,a.comment_txt
+		,a.conn_ip_txt
+		,a.conn_yn
+		,a.conn_dt
+		,a.del_yn
+		,a.reg_id
+		,SUBSTRING(DATE_FORMAT (a.reg_dt,  '%Y-%m-%d %T'), 1, 16) AS reg_dt
+		,a.mod_id
+		,SUBSTRING(DATE_FORMAT (a.mod_dt,  '%Y-%m-%d %T'), 1, 16) AS mod_dt
+		, b.groupauth_nm
+		, c.vendor_nm
+		, (select case when count(*) > 1  then concat(concat(sc.code_nm,' / ',s.sns_id), ' 외', count(0) - 1,'개') else concat(sc.code_nm,' / ',s.sns_id) end  
+			from sys_staff_sns s
+			inner join sys_codeinfo sc on s.sns_typ = sc.code_cd 
+			where s.staff_id = a.staff_id
+		) as sns
+		FROM sys_staffinfo a
+		inner join sys_groupauth b on a.groupauth_id = b.groupauth_id
+		inner join ven_vendorinfo c on. a.vendor_no = c.vendor_no
+		where 1=1
+		<if test='vendor_typ != null and vendor_typ != ""'>
+		and c.vendor_typ = #{vendor_typ}
+		</if>
+		<if test='vendor_no != null and vendor_no != ""'>
+		and a.vendor_no = #{vendor_no}
+		</if>
+		and a.job_cd not in ('11401','11405')
+	</select>
+	
+	<select id="selectStaffList3" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT a.staff_id
+		,a.groupauth_id
+		,a.vendor_no
+		,a.login_id
+		,a.staff_typ
+		,a.passwd_txt
+		,a.staff_enm
+		,a.staff_nm
+		,a.nick_nm
+		,a.job_cd
+		,(select code_nm from sys_codeinfo where code_cd = a.job_cd) as job_nm
+		,a.position_cd
+		,(select code_nm from sys_codeinfo where code_cd = a.position_cd) as position_nm
+		,a.tel_txt
+		,a.mobile_txt
+		,a.email_txt
+		,a.lastlogin_dt
+		,a.login_cnt
+		,a.login_fail_cnt
+		,a.pwd_reset_yn
+		,a.pwd_reset_dt
+		,a.use_yn
+		,a.comment_txt
+		,a.conn_ip_txt
+		,a.conn_yn
+		,a.conn_dt
+		,a.del_yn
+		,a.reg_id
+		,SUBSTRING(DATE_FORMAT (a.reg_dt,  '%Y-%m-%d %T'), 1, 16) AS reg_dt
+		,a.mod_id
+		,SUBSTRING(DATE_FORMAT (a.mod_dt,  '%Y-%m-%d %T'), 1, 16) AS mod_dt
+		, b.groupauth_nm
+		, c.vendor_nm
+		, (select case when count(*) > 1  then concat(concat(sc.code_nm,' / ',s.sns_id), ' 외', count(0) - 1,'개') else concat(sc.code_nm,' / ',s.sns_id) end  
+			from sys_staff_sns s
+			inner join sys_codeinfo sc on s.sns_typ = sc.code_cd 
+			where s.staff_id = a.staff_id
+		) as sns
+		FROM sys_staffinfo a
+		inner join sys_groupauth b on a.groupauth_id = b.groupauth_id
+		inner join ven_vendorinfo c on. a.vendor_no = c.vendor_no
+		where 1=1
+		<if test='vendor_typ != null and vendor_typ != ""'>
+		and c.vendor_typ = #{vendor_typ}
+		</if>
+		<if test='vendor_no != null and vendor_no != ""'>
+		and a.vendor_no = #{vendor_no}
+		</if>
+		and a.job_cd not in ('11401','11405')
+	</select>
+	
+	<select id="updateStaffinfo"   parameterType="java.util.HashMap"  resultType="java.util.HashMap">
+		update sys_staffinfo set
+		mod_id = #{mod_id}
+		, mod_dt = now()
+		<if test='mobile_txt != null and mobile_txt != ""'>
+		, mobile_txt = #{mobile_txt}
+		</if>
+		<if test='email_txt != null and email_txt != ""'>
+		, email_txt = #{email_txt}
+		</if>
+		<if test='comment_txt != null and comment_txt != ""'>
+		, comment_txt = #{comment_txt}
+		</if>
+		<if test='passwd_txt != null and passwd_txt != ""'>
+		, passwd_txt = #{passwd_txt}
+		</if>
+		where login_id = #{login_id}
+	</select>
+	
+	
+	
+	<select id="selectGroupAuth" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select * from sys_groupauth
+		where 1=1
+		<if test='system_typ != null and system_typ != ""'>
+		and system_typ = #{system_typ}
+		</if>
+	</select>
+	
+	<select id="selectLoginIdDup" parameterType="java.util.HashMap" resultType="java.util.HashMap" >
+		SELECT case when count(*) = 0 then 'Y' else 'N' end as useAbleYn
+		, #{loginId} as login_id 
+		FROM sys_staffinfo
+		WHERE staff_id = #{loginId}
+	</select>
+	
+	<insert id="insertStaffDetail"   parameterType="java.util.HashMap">
+		INSERT INTO sys_staffinfo(staff_id
+			,groupauth_id
+			,vendor_no
+			,login_id
+			,staff_typ
+			,passwd_txt
+			,staff_nm
+			,staff_enm
+			,nick_nm
+			,job_cd
+			,position_cd
+			,tel_txt
+			,mobile_txt
+			,email_txt
+			,reg_id
+			,reg_dt
+		) VALUES (
+			#{staff_id}
+			,#{groupauth_id}
+			,#{vendor_no}
+			,#{login_id}
+			,#{staff_typ}
+			,#{passwd_txt}
+			,#{staff_nm}
+			,#{staff_enm}
+			,#{nick_nm}
+			,#{job_cd}
+			,#{position_cd}
+			,#{tel_txt}
+			,#{mobile_txt}
+			,#{email_txt}
+			,#{reg_id}
+			,now()
+		)
+	</insert>
+	 
+	 <update id="updateStaffDetail"   parameterType="java.util.HashMap">
+		update sys_staffinfo set
+		    staff_nm = #{staff_nm}
+		    ,nick_nm = #{nick_nm}
+		    ,staff_enm = #{staff_enm}
+		    ,mobile_txt = #{mobile_txt}
+		    ,use_yn = #{use_yn}
+		    ,email_txt = #{email_txt}
+		    ,comment_txt = #{comment_txt}
+		    ,job_cd = #{job_cd}
+		    ,position_cd = #{position_cd}
+		    ,authentication_yn = #{authentication_yn}
+		    ,mod_id = #{mod_id}
+	    where login_id = #{login_id}
+	</update>
+	
+	<delete id="deleteStaff" parameterType="java.util.HashMap">
+		delete from sys_staffinfo where login_id = #{login_id}
+	</delete>
+	
+	
+	
+	<select id="selectStaffSnsList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select	
+			a.staff_sns_seq
+			,a.staff_id
+			,b.staff_nm
+			,a.sns_typ
+			,d.code_nm as sns_typ_nm
+			,a.sns_id
+		   ,a.reg_id
+		   ,SUBSTRING(DATE_FORMAT (a.reg_dt,  '%Y-%m-%d %T'), 1, 16) AS reg_dt
+		   ,a.mod_id
+		   ,SUBSTRING(DATE_FORMAT (a.mod_dt,  '%Y-%m-%d %T'), 1, 16) AS mod_dt
+		from sys_staff_sns a
+		inner join sys_staffinfo b on a.staff_id = b.staff_id
+		inner join ven_vendorinfo c on b.vendor_no = c.vendor_no
+		inner join sys_codeinfo d on d.code_cd = a.sns_typ 
+		where 1=1
+		<if test='vendor_typ != null and vendor_typ != ""'>
+		and c.vendor_typ = #{vendor_typ}
+		</if>
+		<if test='vendor_no != null and vendor_no != ""'>
+		and c.vendor_no = #{vendor_no}
+		</if>
+		<if test='staff_id != null and staff_id != ""'>
+		and a.staff_id = #{staff_id}
+		</if>	
+	</select>
+	
+	<select id="selectStaffSnsInfo" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select	
+			a.staff_sns_seq
+			,a.staff_id
+			,b.staff_nm
+			,a.sns_typ
+			,a.sns_id
+		   ,a.reg_id
+		   ,SUBSTRING(DATE_FORMAT (a.reg_dt,  '%Y-%m-%d %T'), 1, 16) AS reg_dt
+		   ,a.mod_id
+		   ,SUBSTRING(DATE_FORMAT (a.mod_dt,  '%Y-%m-%d %T'), 1, 16) AS mod_dt
+		from sys_staff_sns a
+		inner join sys_staffinfo b on a.staff_id = b.staff_id
+		inner join ven_vendorinfo c on b.vendor_no = c.vendor_no
+		where 1=1
+		and a.staff_sns_seq = #{staff_sns_seq}
+	</select>
+	
+	<insert id="insertStaffSns"   parameterType="java.util.HashMap">
+		INSERT INTO sys_staff_sns(
+			staff_id
+			,sns_typ
+			,sns_id
+			,reg_id
+			,reg_dt
+		) VALUES (
+			#{staff_id}
+			,#{sns_typ}
+			,#{sns_id}
+			,#{reg_id}
+			,now()
+		)
+	</insert>
+	
+	<update id="updateStaffSns"   parameterType="java.util.HashMap">
+		update sys_staff_sns set
+		    staff_id = #{staff_id}
+		    ,sns_typ = #{sns_typ}
+		    ,sns_id = #{sns_id}
+		    ,mod_id = #{mod_id}
+		    ,mod_dt = now()
+	    where staff_sns_seq = #{staff_sns_seq}
+	</update>
+	
+	<delete id="deleteStaffSns" parameterType="java.util.HashMap">
+		delete from sys_staff_sns where staff_sns_seq = #{staff_sns_seq}
+	</delete>
+
+	
+	<select id="selectStaffDetailPerson" parameterType="java.util.HashMap" resultType="java.util.HashMap" >
+		SELECT a.staff_id
+		,a.groupauth_id
+		,a.vendor_no
+		,a.login_id
+		,a.staff_typ
+		,a.passwd_txt
+		,a.staff_nm
+		,a.staff_enm
+		,a.nick_nm
+		,a.job_cd
+		,(select code_nm from sys_codeinfo where code_cd = a.job_cd) as job_nm
+		,a.position_cd
+		,(select code_nm from sys_codeinfo where code_cd = a.position_cd) as position_nm
+		,a.tel_txt
+		,a.mobile_txt
+		,a.email_txt
+		,a.lastlogin_dt
+		,a.login_cnt
+		,a.login_fail_cnt
+		,a.pwd_reset_yn
+		,a.pwd_reset_dt
+		,a.use_yn
+		,a.comment_txt
+		,a.conn_ip_txt
+		,a.conn_yn
+		,a.conn_dt
+		,a.del_yn
+		,a.authentication_yn
+		,a.reg_id
+		,SUBSTRING(DATE_FORMAT (a.reg_dt,  '%Y-%m-%d %T'), 1, 16) AS reg_dt
+		,a.mod_id
+		,SUBSTRING(DATE_FORMAT (a.mod_dt,  '%Y-%m-%d %T'), 1, 16) AS mod_dt
+		, b.groupauth_nm
+		, c.vendor_nm
+		FROM sys_staffinfo a
+		inner join sys_groupauth b on a.groupauth_id = b.groupauth_id
+		inner join ven_vendorinfo c on. a.vendor_no = c.vendor_no
+		WHERE a.staff_id = #{staff_id}
+	</select>
+	
+	<select id="selectStaffInfo" parameterType="java.util.HashMap" resultType="java.util.HashMap" >
+		SELECT a.staff_id
+		,a.groupauth_id
+		,a.vendor_no
+		,a.login_id
+		,a.staff_typ
+		,a.passwd_txt
+		,a.staff_nm
+		,a.staff_enm
+		,a.nick_nm
+		,a.job_cd
+		,(select code_nm from sys_codeinfo where code_cd = a.job_cd) as job_nm
+		,a.position_cd
+		,(select code_nm from sys_codeinfo where code_cd = a.position_cd) as position_nm
+		,a.tel_txt
+		,a.mobile_txt
+		,a.email_txt
+		,a.lastlogin_dt
+		,a.login_cnt
+		,a.login_fail_cnt
+		,a.pwd_reset_yn
+		,a.pwd_reset_dt
+		,a.use_yn
+		,a.comment_txt
+		,a.conn_ip_txt
+		,a.conn_yn
+		,a.conn_dt
+		,a.del_yn
+		,a.reg_id
+		,SUBSTRING(DATE_FORMAT (a.reg_dt,  '%Y-%m-%d %T'), 1, 16) AS reg_dt
+		,a.mod_id
+		,SUBSTRING(DATE_FORMAT (a.mod_dt,  '%Y-%m-%d %T'), 1, 16) AS mod_dt
+		, b.groupauth_nm
+		, c.vendor_nm
+		FROM sys_staffinfo a
+		inner join sys_groupauth b on a.groupauth_id = b.groupauth_id
+		inner join ven_vendorinfo c on. a.vendor_no = c.vendor_no
+		WHERE 1=1
+		<if test='login_id != null and login_id != ""'>
+		and a.login_id = #{login_id}
+		</if>
+		<if test='staff_id != null and staff_id != ""'>
+		and a.staff_id = #{staff_id}
+		</if>
+		<if test='vendor_typ != null and vendor_typ != ""'>
+		and c.vendor_typ = #{vendor_typ}
+		</if>
+		<if test='vendor_no != null and vendor_no != ""'>
+		and c.vendor_no = #{vendor_no}
+		</if>
+		<if test='job_cd != null and job_cd != ""'>
+		and a.job_cd = #{job_cd}
+		</if>
+		limit 1
+	</select>
+	
+
+
+
+</mapper>

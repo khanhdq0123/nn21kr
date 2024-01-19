@@ -1,0 +1,770 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CommonService">
+ 
+	<select id="getCodeList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select * 
+		from sys_codeinfo 
+		where upcode_cd = #{upcode_cd}
+		and use_yn = 'Y'
+	</select>
+	
+	<select id="getCodeList2" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select *
+		from sys_codeinfo
+		where inside_txt = #{inside_txt}
+		and use_yn = 'Y'
+	</select>
+
+	<select id="getOrderList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select m.ord_no
+			,m.ord_typ
+			,case when(m.ord_typ = '1') then '운송접수' when(m.ord_typ = '2') then '보관접수' when(m.ord_typ = '3') then '견적접수'
+			 when(m.ord_typ = '4') then '원산지접수' when(m.ord_typ = '5') then '통관접수' end as ord_typ_nm
+			,m.send_no
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.send_no) as send_nm
+			, (select v.vendor_cd from ven_vendorinfo v where v.vendor_no = m.send_no) as send_cd
+			,m.receive_no
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.receive_no) as receive_nm
+			, (select v.vendor_cd from ven_vendorinfo v where v.vendor_no = m.receive_no) as receive_cd
+			,m.send_trade_comp_no
+			,m.receive_trade_comp_no
+			,m.send_cc_comp_no
+			,m.receive_cc_comp_no
+			,m.shipping_region_no
+			,m.send_region_no
+			,m.receive_region_no
+			, (select r.region_nm from tb_region r where r.code = m.shipping_region_no) as shipping_region_nm
+			, (select r.region_nm from tb_region r where r.code = m.send_region_no) as send_region_nm
+			, (select r.region_nm from tb_region r where r.code = m.receive_region_no) as receive_region_nm
+			, DATE_FORMAT(m.start_dt, '%Y-%m-%d') as start_dt
+			, DATE_FORMAT(m.arrive_dt, '%Y-%m-%d') as arrive_dt
+			, DATE_FORMAT(m.shipment_dt, '%Y-%m-%d') as shipment_dt
+			,m.transport_way
+			,(select code_nm from sys_codeinfo c where c.code_cd = m.transport_way) as transport_way_nm
+			,m.e_commence_yn
+			,m.charge_target_typ
+			,m.payment_method_typ
+			,m.start_vendor_no
+			,m.transfer_vendor_no
+			,m.arrive_vendor_no
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.start_vendor_no) as start_vendor_nm
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.transfer_vendor_no) as transfer_vendor_nm
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.arrive_vendor_no) as arrive_vendor_nm
+			,m.doc_req_cer_origin_yn
+			,m.doc_req_product_yn
+			,m.doc_req_fta_yn
+			,m.doc_req_su_yn
+			,m.stat_cd
+			,m.receive_dt
+			,m.release_dt
+			,m.reg_id
+			, DATE_FORMAT(m.reg_dt, '%Y-%m-%d') as reg_dt
+			,m.mod_id
+			, DATE_FORMAT(m.mod_dt, '%Y-%m-%d %T') as mod_dt
+			, (select concat(i.item_nm) as item_nm from ord_item i where i.ord_no = m.ord_no group by i.ord_no) as item_nm
+			, (select count(0) from ord_item i where i.ord_no = m.ord_no) as item_cnt
+			, (select sum(qty) from ord_item i where i.ord_no = m.ord_no) as qty
+			, (select sum(amt) from ord_item i where i.ord_no = m.ord_no) as amt
+			, (select sum(tot_amt) from ord_item i where i.ord_no = m.ord_no) as tot_amt
+			, (select sum(box_qty) from ord_item i where i.ord_no = m.ord_no) as box_qty
+			, (select round(sum(kg),1) from ord_item i where i.ord_no = m.ord_no) as kg
+			, (select round(sum(cbm),1) from ord_item i where i.ord_no = m.ord_no) as cbm
+		from ord_mst m
+		where stat_cd in (11601, 11602)
+		<choose>
+			<when test='inout_typ == "1"'>
+			and (m.transfer_vendor_no = #{vendor_no} or m.arrive_vendor_no = #{vendor_no})
+			</when>
+			<otherwise>
+			and (m.start_vendor_no = #{vendor_no} or m.transfer_vendor_no = #{vendor_no})
+			</otherwise>
+		</choose>
+		<if test='ord_typ != null and ord_typ != ""'>
+		and m.ord_typ = #{ord_typ}
+		</if>		
+		order by m.reg_dt desc
+	</select>
+
+	<select id="getOrderInfo" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select m.ord_no
+			,m.ord_typ
+			,case when(m.ord_typ = '1') then '운송접수' when(m.ord_typ = '2') then '보관접수' when(m.ord_typ = '3') then '견적접수'
+			 when(m.ord_typ = '4') then '원산지접수' when(m.ord_typ = '5') then '통관접수' end as ord_typ_nm
+			,m.send_no
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.send_no) as send_nm
+			, (select v.vendor_cd from ven_vendorinfo v where v.vendor_no = m.send_no) as send_cd
+			,m.receive_no
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.receive_no) as receive_nm
+			, (select v.vendor_cd from ven_vendorinfo v where v.vendor_no = m.receive_no) as receive_cd
+			,m.send_trade_comp_no
+			,m.receive_trade_comp_no
+			,m.send_cc_comp_no
+			,m.receive_cc_comp_no
+			,m.shipping_region_no
+			,m.send_region_no
+			,m.receive_region_no
+			, (select addr from v_region r where r.code = m.shipping_region_no) as shipping_region_nm
+			, (select addr from v_region r where r.code = m.send_region_no) as send_region_nm
+			, (select addr from v_region r where r.code = m.receive_region_no) as receive_region_nm
+			, DATE_FORMAT(m.start_dt, '%Y-%m-%d') as start_dt
+			, DATE_FORMAT(m.arrive_dt, '%Y-%m-%d') as arrive_dt
+			, DATE_FORMAT(m.shipment_dt, '%Y-%m-%d') as shipment_dt
+			,m.transport_way
+			,(select code_nm from sys_codeinfo c where c.code_cd = m.transport_way) as transport_way_nm
+			,m.e_commence_yn
+			,m.charge_target_typ
+			,m.payment_method_typ
+			,m.start_vendor_no
+			,m.transfer_vendor_no
+			,m.arrive_vendor_no
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.start_vendor_no) as start_vendor_nm
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.transfer_vendor_no) as transfer_vendor_nm
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.arrive_vendor_no) as arrive_vendor_nm
+			, (select v.vendor_cd from ven_vendorinfo v where v.vendor_no = m.start_vendor_no) as start_vendor_cd
+			, (select v.vendor_cd from ven_vendorinfo v where v.vendor_no = m.transfer_vendor_no) as transfer_vendor_cd
+			, (select v.vendor_cd from ven_vendorinfo v where v.vendor_no = m.arrive_vendor_no) as arrive_vendor_cd	
+			,m.doc_req_cer_origin_yn
+			,m.doc_req_product_yn
+			,m.doc_req_fta_yn
+			,m.doc_req_su_yn
+			,m.stat_cd
+			,m.receive_dt
+			,m.release_dt
+			,m.reg_id
+			, DATE_FORMAT(m.reg_dt, '%Y-%m-%d') as reg_dt
+			,m.mod_id
+			, DATE_FORMAT(m.mod_dt, '%Y-%m-%d %T') as mod_dt
+			, (select concat(i.item_nm) as item_nm from ord_item i where i.ord_no = m.ord_no group by i.ord_no) as item_nm
+			, (select count(0) from ord_item i where i.ord_no = m.ord_no) as item_cnt
+			, (select sum(qty) from ord_item i where i.ord_no = m.ord_no) as qty
+			, (select sum(amt) from ord_item i where i.ord_no = m.ord_no) as amt
+			, (select sum(tot_amt) from ord_item i where i.ord_no = m.ord_no) as tot_amt
+			, (select sum(box_qty) from ord_item i where i.ord_no = m.ord_no) as box_qty
+			, (select round(sum(kg),1) from ord_item i where i.ord_no = m.ord_no) as kg
+			, (select round(sum(cbm),1) from ord_item i where i.ord_no = m.ord_no) as cbm
+		from ord_mst m
+		where m.ord_no = #{ord_no}
+	</select>
+
+	<select id="getOrderItemList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select *
+		from ord_item m
+		where m.ord_no = #{ord_no}
+	</select>
+
+
+	<select id="selectOrdImportAttachList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select da.ord_no
+				,da.att_seq
+				,CAST( da.filename_txt AS CHAR (10000) CHARACTER SET UTF8) AS filename_txt
+				,da.attachfile_txt
+		from ord_import_attach da
+		where da.ord_no = #{ord_no}
+	</select>
+	
+	<select id="selectOrdExportAttachList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select da.ord_no
+				,da.att_seq
+				,CAST( da.filename_txt AS CHAR (10000) CHARACTER SET UTF8) AS filename_txt
+				,da.attachfile_txt
+		from ord_export_attach da
+		where da.ord_no = #{ord_no}
+	</select>
+
+
+
+	<select id="getVendorAllList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+			SELECT v.vendor_no
+				,v.vendor_cd
+				, concat('[',ifnull(v.vendor_cd,v.vendor_no) ,'] ',v.vendor_nm) as vendor_nm
+				,v.vendor_nm_eng
+				,v.vendor_typ
+				,'지사' as vendor_typ_nm
+				, ifnull(v.upvendor_no, '') as rel_vendor_no
+				, ifnull((select i.vendor_nm_eng from ven_vendorinfo i where i.vendor_no = v.upvendor_no), '') as rel_vendor_nm_eng
+				, ifnull((select i.vendor_nm from ven_vendorinfo i where i.vendor_no = v.upvendor_no), '') as rel_vendor_nm
+				,v.ceo_nm
+				,v.biz_num_txt
+				,v.tax_cd
+				,v.business_type_txt
+				,v.business_txt
+				,v.tel_txt
+				,v.fax_txt
+				,v.email_txt
+				,v.homepage_url
+				,v.item_txt
+				,v.charge_name_nm
+				,v.charge_tel_txt
+				,v.charge_mobil_txt
+				,v.charge_email_txt
+				,v.zipnum_cd
+				,v.basadd_txt
+				,v.dtladd_txt
+				,v.road_basadd_txt
+				,v.road_dtladd_txt
+				,v.stats_typ_cd
+				, v.reg_id
+				, DATE_FORMAT(v.reg_dt, '%Y-%m-%d %T') as reg_dt
+				, v.mod_id
+				, DATE_FORMAT(v.mod_dt, '%Y-%m-%d %T') as mod_dt
+			FROM ven_vendorinfo v
+			WHERE v.vendor_typ = 2
+			and v.stats_typ_cd = '11202'
+			order by v.vendor_no desc	
+	</select>
+
+
+
+	<select id="getPartnerList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+			SELECT v.vendor_no
+				,v.vendor_cd
+				, concat('[',ifnull(v.vendor_cd,v.vendor_no) ,'] ',v.vendor_nm) as vendor_nm
+				,v.vendor_nm_eng
+				,v.vendor_typ
+				,'고객사' as vendor_typ_nm
+				, ifnull(v.upvendor_no, '') as rel_vendor_no
+				, ifnull((select i.vendor_nm_eng from ven_vendorinfo i where i.vendor_no = v.upvendor_no), '') as rel_vendor_nm_eng
+				, ifnull((select i.vendor_nm from ven_vendorinfo i where i.vendor_no = v.upvendor_no), '') as rel_vendor_nm
+				,v.ceo_nm
+				,v.biz_num_txt
+				,v.tax_cd
+				,v.business_type_txt
+				,v.business_txt
+				,v.tel_txt
+				,v.fax_txt
+				,v.email_txt
+				,v.homepage_url
+				,v.item_txt
+				,v.charge_name_nm
+				,v.charge_tel_txt
+				,v.charge_mobil_txt
+				,v.charge_email_txt
+				,v.zipnum_cd
+				,v.basadd_txt
+				,v.dtladd_txt
+				,v.road_basadd_txt
+				,v.road_dtladd_txt
+				,v.stats_typ_cd
+				, v.reg_id
+				, DATE_FORMAT(v.reg_dt, '%Y-%m-%d %T') as reg_dt
+				, v.mod_id
+				, DATE_FORMAT(v.mod_dt, '%Y-%m-%d %T') as mod_dt
+			FROM ven_vendorinfo v
+			inner join ven_vendor_relation r on v.vendor_no = r.rel_vendor_no 	
+			WHERE v.vendor_typ = #{vendor_typ}
+			and r.vendor_no = #{vendor_no}
+			order by v.vendor_no desc		
+	</select>
+
+	<select id="getCustomerList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+			SELECT v.vendor_no
+				,v.vendor_cd
+				, case v.vendor_cd when null then concat('[',v.vendor_no ,'] ',v.vendor_nm)
+					when '' then concat('[',v.vendor_no ,'] ',v.vendor_nm)
+					else concat('[',ifnull(v.vendor_cd,v.vendor_no) ,'] ',v.vendor_nm) end  as vendor_nm
+				,v.vendor_nm_eng
+				,v.vendor_typ
+				,'고객사' as vendor_typ_nm
+				, ifnull(v.upvendor_no, '') as rel_vendor_no
+				, ifnull((select i.vendor_nm_eng from ven_vendorinfo i where i.vendor_no = v.upvendor_no), '') as rel_vendor_nm_eng
+				, ifnull((select i.vendor_nm from ven_vendorinfo i where i.vendor_no = v.upvendor_no), '') as rel_vendor_nm
+				,v.ceo_nm
+				,v.biz_num_txt
+				,v.tax_cd
+				,v.business_type_txt
+				,v.business_txt
+				,v.tel_txt
+				,v.fax_txt
+				,v.email_txt
+				,v.homepage_url
+				,v.item_txt
+				,v.charge_name_nm
+				,v.charge_tel_txt
+				,v.charge_mobil_txt
+				,v.charge_email_txt
+				,v.zipnum_cd
+				,v.basadd_txt
+				,v.dtladd_txt
+				,v.road_basadd_txt
+				,v.road_dtladd_txt
+				,v.stats_typ_cd
+				, v.reg_id
+				, DATE_FORMAT(v.reg_dt, '%Y-%m-%d %T') as reg_dt
+				, v.mod_id
+				, DATE_FORMAT(v.mod_dt, '%Y-%m-%d %T') as mod_dt
+			FROM ven_vendorinfo v
+			inner join ven_vendor_relation r on v.vendor_no = r.rel_vendor_no 	
+			WHERE v.vendor_typ = 3
+			and r.vendor_no = #{vendor_no}
+			order by v.vendor_no desc		
+	</select>
+
+	<select id="getCompList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+
+			SELECT v.vendor_no
+				,v.vendor_cd
+				, concat('[',ifnull(v.vendor_cd,v.vendor_no) ,'] ',v.vendor_nm) as vendor_nm
+				, v.upvendor_no
+				, v.upvendor_nm
+				,v.vendor_nm_eng
+				,v.vendor_typ
+				,case when v.vendor_typ = '2' then '고객사' when v.vendor_typ = '3' then '고객사' when v.vendor_typ = '4' then '관세사' when v.vendor_typ = '5' then '창고' when v.vendor_typ = '6' then '운송사' end as vendor_typ_nm
+				,v.ceo_nm
+				,v.biz_num_txt
+				,v.tax_cd
+				,v.business_type_txt
+				,v.business_txt
+				,v.tel_txt
+				,v.fax_txt
+				,v.email_txt
+				,v.homepage_url
+				,v.item_txt
+				,v.charge_name_nm
+				,v.charge_tel_txt
+				,v.charge_mobil_txt
+				,v.charge_email_txt
+				,v.zipnum_cd
+				,v.basadd_txt
+				,v.dtladd_txt
+				,v.road_basadd_txt
+				,v.road_dtladd_txt
+				,v.stats_typ_cd
+				, v.reg_id
+				, DATE_FORMAT(v.reg_dt, '%Y-%m-%d %T') as reg_dt
+				, v.mod_id
+				, DATE_FORMAT(v.mod_dt, '%Y-%m-%d %T') as mod_dt
+			FROM ven_vendorinfo v
+			WHERE 1=1
+			and v.upvendor_no = #{upvendor_no}
+			<if test='vendor_typ != null and vendor_typ != ""'>
+			and v.vendor_typ = #{vendor_typ}
+			</if>
+			order by v.vendor_nm			
+	</select>
+
+	<select id="getVendorInfo" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select *
+		from ven_vendorinfo
+		where vendor_no = #{vendor_no}
+	</select>
+
+	<select id="getBusinessKindList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select code
+		,upcode
+		,code_nm
+		,upcode_nm
+		,sort_seq
+		, reg_id
+		, DATE_FORMAT(reg_dt, '%Y-%m-%d %T') as reg_dt
+		, mod_id
+		, DATE_FORMAT(mod_dt, '%Y-%m-%d %T') as mod_dt
+		from business_kind
+		where upcode = #{upcode}
+		order by sort_seq
+	</select>
+
+	<select id="getRegionInfo" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select *
+		from v_region
+		where code = #{code}
+	</select>
+
+	<select id="getRouteList"  parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select 
+			m.route_no
+			,m.route_nm
+			,m.trans_typ
+			,m.trans_way
+			,tw.code_nm as trans_way_nm
+			,m.vendor_no
+			,v.vendor_nm
+			,v.vendor_cd
+			,m.ct_size
+			,cs.code_nm as ct_size_nm
+			,m.st_port_no
+			,st.addr as st_port_nm
+			,ar_port_no
+			,ar.addr as ar_port_nm
+			,m.use_yn
+			,m.reg_id
+			,DATE_FORMAT(m.reg_dt, '%Y-%m-%d %T') as reg_dt
+			,m.mod_id
+			,DATE_FORMAT(m.mod_dt, '%Y-%m-%d %T') as mod_dt
+		from route_mst m
+		inner join v_port st on m.st_port_no = st.code
+		inner join v_port ar on m.ar_port_no = ar.code
+		inner join ven_vendorinfo v on m.vendor_no = v.vendor_no
+		inner join sys_codeinfo cs on m.ct_size = cs.code_cd
+		inner join sys_codeinfo tw on m.trans_way = tw.code_cd
+		where 1=1
+		<if test='vendor_no !=null and vendor_no != ""'>
+		and m.vendor_no = #{vendor_no}
+		</if>		
+		<if test='trans_typ !=null and trans_typ != ""'>
+		and m.trans_typ = #{trans_typ}
+		</if>
+		<if test='trans_way !=null and trans_way != ""'>
+		and m.trans_way = #{trans_way}
+		</if>
+		order by m.reg_dt desc
+	</select>
+
+	<select id="getPlList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select pl_no
+			, route_no
+			, pl_nm
+			, unit_cd
+			, exw
+			, ddp
+			, cnf
+			, fob
+			, amt
+			, reg_id
+			, DATE_FORMAT(reg_dt, '%Y-%m-%d %T') as reg_dt
+			, mod_id
+			, DATE_FORMAT(mod_dt, '%Y-%m-%d %T') as mod_dt
+		from pl_mst
+		where route_no = #{route_no}
+	</select>
+
+	<select id="getStaffList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT a.staff_id
+		,a.groupauth_id
+		,a.vendor_no
+		,a.login_id
+		,a.staff_typ
+		,a.passwd_txt
+		,a.staff_enm
+		,a.staff_nm
+		,a.nick_nm
+		,a.job_cd
+		,(select code_nm from sys_codeinfo where code_cd = a.job_cd) as job_nm
+		,a.position_cd
+		,(select code_nm from sys_codeinfo where code_cd = a.position_cd) as position_nm
+		,a.tel_txt
+		,a.mobile_txt
+		,a.email_txt
+		,a.lastlogin_dt
+		,a.login_cnt
+		,a.login_fail_cnt
+		,a.pwd_reset_yn
+		,a.pwd_reset_dt
+		,a.use_yn
+		,a.comment_txt
+		,a.conn_ip_txt
+		,a.conn_yn
+		,a.conn_dt
+		,a.del_yn
+		,a.reg_id
+		,SUBSTRING(DATE_FORMAT (a.reg_dt,  '%Y-%m-%d %T'), 1, 16) AS reg_dt
+		,a.mod_id
+		,SUBSTRING(DATE_FORMAT (a.mod_dt,  '%Y-%m-%d %T'), 1, 16) AS mod_dt
+		, b.groupauth_nm
+		, c.vendor_nm
+		, (select case when count(*) > 1  then concat(concat(sc.code_nm,' / ',s.sns_id), ' 외', count(0) - 1,'개') else concat(sc.code_nm,' / ',s.sns_id) end  
+			from sys_staff_sns s
+			inner join sys_codeinfo sc on s.sns_typ = sc.code_cd 
+			where s.staff_id = a.staff_id
+		) as sns
+		FROM sys_staffinfo a
+		inner join sys_groupauth b on a.groupauth_id = b.groupauth_id
+		inner join ven_vendorinfo c on. a.vendor_no = c.vendor_no
+		where 1=1
+		<if test='vendor_typ != null and vendor_typ != ""'>
+		and c.vendor_typ = #{vendor_typ}
+		</if>
+		<if test='vendor_no != null and vendor_no != ""'>
+		and a.vendor_no = #{vendor_no}
+		</if>
+	</select>
+
+	<select id="getStaffSnsList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select	
+			a.staff_sns_seq
+			,a.staff_id
+			,b.staff_nm
+			,a.sns_typ
+			,d.code_nm as sns_typ_nm
+			,a.sns_id
+		   ,a.reg_id
+		   ,SUBSTRING(DATE_FORMAT (a.reg_dt,  '%Y-%m-%d %T'), 1, 16) AS reg_dt
+		   ,a.mod_id
+		   ,SUBSTRING(DATE_FORMAT (a.mod_dt,  '%Y-%m-%d %T'), 1, 16) AS mod_dt
+		from sys_staff_sns a
+		inner join sys_staffinfo b on a.staff_id = b.staff_id
+		inner join ven_vendorinfo c on b.vendor_no = c.vendor_no
+		inner join sys_codeinfo d on d.code_cd = a.sns_typ 
+		where 1=1
+		<if test='vendor_typ != null and vendor_typ != ""'>
+		and c.vendor_typ = #{vendor_typ}
+		</if>
+		<if test='vendor_no != null and vendor_no != ""'>
+		and c.vendor_no = #{vendor_no}
+		</if>
+		<if test='staff_id != null and staff_id != ""'>
+		and a.staff_id = #{staff_id}
+		</if>	
+	</select>
+
+	<select id="getStaffInfo" parameterType="java.util.HashMap" resultType="java.util.HashMap" >
+		SELECT a.staff_id
+		,a.groupauth_id
+		,a.vendor_no
+		,a.login_id
+		,a.staff_typ
+		,a.passwd_txt
+		,a.staff_nm
+		,a.staff_enm
+		,a.nick_nm
+		,a.job_cd
+		,(select code_nm from sys_codeinfo where code_cd = a.job_cd) as job_nm
+		,a.position_cd
+		,(select code_nm from sys_codeinfo where code_cd = a.position_cd) as position_nm
+		,a.tel_txt
+		,a.mobile_txt
+		,a.email_txt
+		,a.lastlogin_dt
+		,a.login_cnt
+		,a.login_fail_cnt
+		,a.pwd_reset_yn
+		,a.pwd_reset_dt
+		,a.use_yn
+		,a.comment_txt
+		,a.conn_ip_txt
+		,a.conn_yn
+		,a.conn_dt
+		,a.del_yn
+		,a.authentication_yn
+		,a.reg_id
+		,SUBSTRING(DATE_FORMAT (a.reg_dt,  '%Y-%m-%d %T'), 1, 16) AS reg_dt
+		,a.mod_id
+		,SUBSTRING(DATE_FORMAT (a.mod_dt,  '%Y-%m-%d %T'), 1, 16) AS mod_dt
+		, b.groupauth_nm
+		, c.vendor_nm
+		FROM sys_staffinfo a
+		inner join sys_groupauth b on a.groupauth_id = b.groupauth_id
+		inner join ven_vendorinfo c on. a.vendor_no = c.vendor_no
+		WHERE a.staff_id = #{staff_id}
+	</select>
+
+	<select id="getCustomsExchangeRate" parameterType="java.util.HashMap" resultType="java.util.HashMap" >
+		select * 
+		from customs_exchange_rate
+		where customs_exch_no = #{customs_exch_no}
+	</select>
+
+	<select id="getCustomsExchangeRateList" parameterType="java.util.HashMap" resultType="java.util.HashMap" >
+		select * 
+		from customs_exchange_rate
+		order by app_st_dt desc
+	</select>
+
+	<select id="selectNoticeList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select nm.notice_no
+			,nm.notice_typ
+			,nm.title_txt
+			,nm.del_yn
+			,ss.staff_nm
+			,ss.staff_id
+			,vv.vendor_no
+			,vv.vendor_cd
+			,vv.vendor_nm
+			,nm.reg_id
+			,DATE_FORMAT(nm.reg_dt, '%Y-%m-%d %T') as reg_dt
+			,nm.mod_id
+			,DATE_FORMAT(nm.mod_dt, '%Y-%m-%d %T') as mod_dt
+		from notice_mst nm
+		inner join sys_staffinfo ss on nm.reg_id = ss.staff_id
+		inner join ven_vendorinfo vv on nm.vendor_no = vv.vendor_no
+		where nm.vendor_no = #{vendor_no}
+		order by nm.reg_dt desc
+	</select>
+	
+	<select id="selectNoticeList4Main" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select nm.notice_no
+			,nm.notice_typ
+			,nm.title_txt
+			,nm.del_yn
+			,ss.staff_nm
+			,ss.staff_id
+			,vv.vendor_no
+			,vv.vendor_cd
+			,vv.vendor_nm
+			,nm.reg_id
+			,DATE_FORMAT(nm.reg_dt, '%Y-%m-%d %T') as reg_dt
+			,nm.mod_id
+			,DATE_FORMAT(nm.mod_dt, '%Y-%m-%d %T') as mod_dt
+		from notice_mst nm
+		inner join sys_staffinfo ss on nm.reg_id = ss.staff_id
+		inner join ven_vendorinfo vv on nm.vendor_no = vv.vendor_no
+		where nm.vendor_no = #{vendor_no}
+		order by nm.reg_dt desc
+		limit 5
+	</select>
+
+	<select id="selectNoticeDetail" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select dm.notice_no
+			,dm.notice_typ
+			,dm.title_txt
+			,CAST( dm.content_txt AS CHAR (10000) CHARACTER SET UTF8) AS content_txt
+			,dm.del_yn
+			,dm.reg_id
+			,DATE_FORMAT(dm.reg_dt, '%Y-%m-%d %T') as reg_dt
+			,dm.mod_id
+			,DATE_FORMAT(dm.mod_dt, '%Y-%m-%d %T') as mod_dt
+		from notice_mst dm
+		where dm.notice_no = #{notice_no}
+	</select>
+
+	<select id="selectAdmNoticeList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select nm.adm_notice_no
+			,nm.notice_typ
+			,nm.title_txt
+			,nm.del_yn
+			,ss.staff_nm
+			,ss.staff_id
+			,vv.vendor_no
+			,vv.vendor_cd
+			,vv.vendor_nm
+			,nm.reg_id
+			,DATE_FORMAT(nm.reg_dt, '%Y-%m-%d %T') as reg_dt
+			,nm.mod_id
+			,DATE_FORMAT(nm.mod_dt, '%Y-%m-%d %T') as mod_dt
+		from adm_notice_mst nm
+		inner join sys_staffinfo ss on nm.reg_id = ss.staff_id
+		inner join adm_notice_vendor nv on nm.adm_notice_no = nv.adm_notice_no
+		inner join ven_vendorinfo vv on nv.vendor_no = vv.vendor_no
+		where nv.vendor_no = #{vendor_no}
+		order by nm.reg_dt desc
+	</select>
+	
+	<select id="selectAdmNoticeList4Main" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select nm.adm_notice_no
+			,nm.notice_typ
+			,nm.title_txt
+			,nm.del_yn
+			,ss.staff_nm
+			,ss.staff_id
+			,vv.vendor_no
+			,vv.vendor_cd
+			,vv.vendor_nm
+			,nm.reg_id
+			,DATE_FORMAT(nm.reg_dt, '%Y-%m-%d %T') as reg_dt
+			,nm.mod_id
+			,DATE_FORMAT(nm.mod_dt, '%Y-%m-%d %T') as mod_dt
+		from adm_notice_mst nm
+		inner join sys_staffinfo ss on nm.reg_id = ss.staff_id
+		inner join adm_notice_vendor nv on nm.adm_notice_no = nv.adm_notice_no
+		inner join ven_vendorinfo vv on nv.vendor_no = vv.vendor_no
+		where nv.vendor_no = #{vendor_no}
+		order by nm.reg_dt desc
+		limit 5
+	</select>
+
+	<select id="selectAdmNoticeDetail" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select dm.adm_notice_no
+			,dm.notice_typ
+			,dm.title_txt
+			,CAST( dm.content_txt AS CHAR (10000) CHARACTER SET UTF8) AS content_txt
+			,dm.del_yn
+			,dm.reg_id
+			,DATE_FORMAT(dm.reg_dt, '%Y-%m-%d %T') as reg_dt
+			,dm.mod_id
+			,DATE_FORMAT(dm.mod_dt, '%Y-%m-%d %T') as mod_dt
+		from adm_notice_mst dm
+		where dm.adm_notice_no = #{adm_notice_no}
+	</select>
+
+
+
+
+
+	 <update id="updateStaffInfo"   parameterType="java.util.HashMap">
+		update sys_staffinfo set
+		staff_nm = #{staff_nm}
+		<if test='nick_nm != null and nick_nm != ""'>
+		    ,nick_nm = #{nick_nm}
+		</if>
+		<if test='staff_enm != null and staff_enm != ""'>
+		    ,staff_enm = #{staff_enm}
+		</if>
+		<if test='mobile_txt != null and mobile_txt != ""'>
+		    ,mobile_txt = #{mobile_txt}
+		</if>
+		<if test='use_yn != null and use_yn != ""'>		    
+		    ,use_yn = #{use_yn}
+		</if>
+		<if test='email_txt != null and email_txt != ""'>		    
+		    ,email_txt = #{email_txt}
+		</if>
+		<if test='comment_txt != null and comment_txt != ""'>		    
+		    ,comment_txt = #{comment_txt}
+		</if>
+		<if test='job_cd != null and job_cd != ""'>		    
+		    ,job_cd = #{job_cd}
+		</if>
+		<if test='position_cd != null and position_cd != ""'>		    
+		    ,position_cd = #{position_cd}
+		</if>
+		<if test='authentication_yn != null and authentication_yn != ""'>		    
+		    ,authentication_yn = #{authentication_yn}
+		</if>    
+		    ,mod_id = #{mod_id}
+	    where login_id = #{login_id}
+	</update>
+
+
+
+
+
+
+
+
+
+
+	<insert id="insert" parameterType="java.util.HashMap">
+		insert into pl_mst (
+			route_no
+			,pl_nm
+			,unit_cd
+			,exw
+			,ddp
+			,cnf
+			,fob
+			,amt
+			,reg_id
+			,reg_dt
+		) VALUES (
+			#{route_no}
+			, #{pl_nm}
+			, #{unit_cd}
+			, #{exw}
+			, #{ddp}
+			, #{cnf}
+			, #{fob}
+			, #{amt}
+			, #{reg_id}
+			, now()
+		)
+	</insert>
+
+	<update id="update" parameterType="java.util.HashMap">
+		update pl_mst 
+		set pl_nm = #{pl_nm}
+			, unit_cd = #{unit_cd}
+			, exw = #{exw}
+			, ddp = #{ddp}
+			, cnf = #{cnf}
+			, fob = #{fob}
+			, amt = #{amt}
+			, mod_id = #{mod_id}
+			, mod_dt = now()
+		where pl_no = #{pl_no}
+	</update>
+	
+	<delete id="delete" parameterType="java.util.HashMap">
+		delete from pl_mst where pl_no = #{pl_no}
+	</delete>
+
+</mapper>

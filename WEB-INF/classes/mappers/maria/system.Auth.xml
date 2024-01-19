@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.AuthDAO">
+
+<select id="selectGroupAuthList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	SELECT
+	groupauth_id
+	,upgroupauth_id
+	,groupauth_nm
+	,system_typ
+	,comment_txt
+	,sort_seq
+	,use_yn
+	FROM sys_groupauth
+</select>
+
+<select id="selectMenuAuthList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	SELECT t.menu_nm, t.menuurl_txt, t.menu_yn, t.use_yn, t.groupauth_id, t.menu_id, t.person_inf_yn, t.flag_yn
+	FROM (
+		SELECT  b.menu_nm
+			, b.menuurl_txt
+			, b.menu_yn
+			, a.use_yn
+			, b.person_inf_yn
+			, a.groupauth_id
+			, a.menu_id
+			, 'Y' AS flag_yn
+		FROM sys_groupmenu a
+		LEFT OUTER JOIN sys_menuinfo b
+		ON a.menu_id = b.menu_id
+		where a.groupauth_id = #{groupauth_id_s}
+		) as t
+</select>
+
+<insert id="insertGroupAuthDetail"   parameterType="java.util.HashMap" >
+	insert into sys_groupauth(
+		upgroupauth_id
+		,groupauth_nm
+		,system_typ
+		,comment_txt
+		,sort_seq
+		,use_yn
+		,regstaff_id
+		,reg_dt
+		,modstaff_id
+		,mod_dt
+	) values (
+		'00000'
+		,#{groupauth_nm}
+		,#{system_typ}
+		,#{comment_txt}
+		,#{sort_seq}
+		,#{use_yn}
+		,#{regstaff_id}
+		,now()
+		,#{regstaff_id}
+		,now()
+	)
+</insert>
+
+<update id="updateGroupAuthList"   parameterType="java.util.HashMap" >
+	update sys_groupauth
+	set groupauth_nm = #{groupauth_nm}
+	, use_yn = #{use_yn}
+	, system_typ = #{system_typ}
+	, sort_seq = #{sort_seq}
+	, modstaff_id = #{modstaff_id}
+	, mod_dt = now()
+	where groupauth_id = #{groupauth_id}
+</update>
+
+<update id="updateGroupMenuList"   parameterType="java.util.HashMap" >
+	update sys_groupmenu set use_yn = #{use_yn}
+		,modstaff_id = #{modstaff_id}
+		,mod_dt = now()
+	where groupauth_id = #{groupauth_id}
+	and menu_id = #{menu_id}
+</update>
+
+<insert id="insertGroupMenuDetail"   parameterType="java.util.HashMap" >
+	insert into sys_groupmenu(groupauth_id
+		,menu_id
+		,use_yn
+		,regstaff_id
+		,reg_dt
+		,modstaff_id
+		,mod_dt
+	) values (
+		#{groupauth_id}
+		,#{menu_id}
+		,#{use_yn}
+		,#{regstaff_id}
+		,now()
+		,#{regstaff_id}
+		,now()
+	)
+</insert>
+
+</mapper>

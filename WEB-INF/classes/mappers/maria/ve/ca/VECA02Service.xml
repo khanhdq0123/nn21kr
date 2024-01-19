@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="VECA01Service">
+ 
+	<select id="getSearch" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select a.charge_unit
+			,a.charge_amt
+			,a.paid_amt
+			,a.receivable_amt
+			,a.charge_dt
+			,b.receive_no
+			,b.send_no
+			,(select v.vendor_nm from ven_vendorinfo v where v.vendor_no = b.send_no) as send_nm
+			,b.receive_no
+			,(select v.vendor_nm from ven_vendorinfo v where v.vendor_no = b.receive_no) as receive_nm
+		from ord_charge_mst a
+		inner join ord_mst b
+		on a.ord_no = b.ord_no
+		where charge_vendor_no = #{charge_vendor_no}
+		order by a.charge_dt desc
+	</select>
+
+	<insert id="insert" parameterType="java.util.HashMap">
+		insert into pl_mst (
+			route_no
+			,pl_nm
+			,unit_cd
+			,exw
+			,ddp
+			,cnf
+			,fob
+			,amt
+			,reg_id
+			,reg_dt
+		) VALUES (
+			#{route_no}
+			, #{pl_nm}
+			, #{unit_cd}
+			, #{exw}
+			, #{ddp}
+			, #{cnf}
+			, #{fob}
+			, #{amt}
+			, #{reg_id}
+			, now()
+		)
+	</insert>
+
+	<update id="update" parameterType="java.util.HashMap">
+		update pl_mst 
+		set pl_nm = #{pl_nm}
+			, unit_cd = #{unit_cd}
+			, exw = #{exw}
+			, ddp = #{ddp}
+			, cnf = #{cnf}
+			, fob = #{fob}
+			, amt = #{amt}
+			, mod_id = #{mod_id}
+			, mod_dt = now()
+		where pl_no = #{pl_no}
+	</update>
+	
+	<delete id="delete" parameterType="java.util.HashMap">
+		delete from pl_mst where pl_no = #{pl_no}
+	</delete>
+
+</mapper>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ADMS01Service">
+ 
+	<select id="getSearch" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select
+			msg_no
+			,msg_typ1
+			,msg_typ2
+			,msg_target
+			,msg_lan
+			,msg_content
+			,vendor_no
+			,reg_id
+			,reg_dt
+			,mod_id
+			,mod_dt
+		from msg_mst
+		WHERE 1=1
+		<if test='msg_typ1 != null and msg_typ1 != ""'>
+		and msg_typ1 = #{msg_typ1}
+		</if>
+		<if test='msg_typ2 != null and msg_typ2 != ""'>
+		and msg_typ2 = #{msg_typ2}
+		</if>
+		<if test='msg_target != null and msg_target != ""'>
+		and msg_target = #{msg_target}
+		</if>
+		<if test='msg_lagn != null and msg_lagn != ""'>
+		and msg_lagn = #{msg_lagn}
+		</if>
+		<if test='vendor_no != null and vendor_no != ""'>
+		and vendor_no = #{vendor_no}
+		</if>
+		order by reg_dt desc
+	</select>
+	
+	<select id="getSearchDtl" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select
+			msg_no
+			,msg_typ1
+			,msg_typ2
+			,msg_target
+			,msg_lan
+			,msg_content
+			,vendor_no
+			,reg_id
+			,reg_dt
+			,mod_id
+			,mod_dt
+		from msg_mst
+		where msg_no = #{msg_no}
+	</select>
+
+	<insert id="insert" parameterType="java.util.HashMap">
+		insert into msg_mst (
+			msg_typ1
+			,msg_typ2
+			,msg_target
+			,msg_lan
+			,msg_content
+			,vendor_no
+			,reg_id
+			,reg_dt
+		) VALUES (
+			#{msg_typ1}
+			,#{msg_typ2}
+			,#{msg_target}
+			,#{msg_lan}
+			,#{msg_content}
+			,#{vendor_no}
+			,#{reg_id}
+			,now()
+		)
+	</insert>
+
+	<update id="update" parameterType="java.util.HashMap">
+		update msg_mst 
+		set msg_typ1 = #{msg_typ1}
+			,msg_typ2 = #{msg_typ2}
+			,msg_target = #{msg_target}
+			,msg_lan = #{msg_lan}
+			,msg_content = #{msg_content}
+			,vendor_no = #{vendor_no}
+			,mod_id = #{mod_id}
+			,mod_dt	= now()
+		where msg_no = #{msg_no}
+	</update>
+	
+	<delete id="delete" parameterType="java.util.HashMap">
+		delete from msg_mst where msg_no = #{msg_no}
+	</delete>
+
+</mapper>

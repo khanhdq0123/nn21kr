@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="region.RegionDAO">
+
+<select id="getRegionInfo"  parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select *
+	from v_region
+	where code = #{region_no}
+</select>
+
+
+<select id="selectRouteList"  parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select route_no
+		,route_typ
+		,trans_typ1
+		,trans_typ2
+		,st_region1
+		,st_region2
+		,st_region3
+		,st_region4
+		,st_region5
+		,st_region6
+		,ar_region1
+		,ar_region2
+		,ar_region3
+		,ar_region4
+		,ar_region5
+		,ar_region6
+		, (select code_nm from sys_codeinfo where code_cd = trans_typ1) as trans_typ1_nm
+		, (select code_nm from sys_codeinfo where code_cd = trans_typ2) as trans_typ2_nm
+		, (select region_nm from tb_region where code = st_region1) as st_region1_nm
+		, (select region_nm from tb_region where code = st_region2) as st_region2_nm
+		, (select region_nm from tb_region where code = st_region3) as st_region3_nm
+		, (select region_nm from tb_region where code = st_region4) as st_region4_nm
+		, (select region_nm from tb_region where code = st_region5) as st_region5_nm
+		, (select region_nm from tb_region where code = st_region6) as st_region6_nm
+		, (select region_nm from tb_region where code = ar_region1) as ar_region1_nm
+		, (select region_nm from tb_region where code = ar_region2) as ar_region2_nm
+		, (select region_nm from tb_region where code = ar_region3) as ar_region3_nm
+		, (select region_nm from tb_region where code = ar_region4) as ar_region4_nm
+		, (select region_nm from tb_region where code = ar_region5) as ar_region5_nm
+		, (select region_nm from tb_region where code = ar_region6) as ar_region6_nm
+		,reg_id
+		, DATE_FORMAT(reg_dt, '%Y-%m-%d %T') as reg_dt
+		,mod_id
+		, DATE_FORMAT(mod_dt, '%Y-%m-%d %T') as mod_dt
+	from route_mst
+	where 1=1
+	<if test='trans_typ1 !=null and trans_typ1 != ""'>
+	and trans_typ1 = #{trans_typ1}
+	</if>
+	<if test='trans_typ2 !=null and trans_typ2 != ""'>
+	and trans_typ2 = #{trans_typ2}
+	</if>
+	order by reg_dt desc
+</select>
+
+<select id="selectRouteInfo"  parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select route_no
+		,route_typ
+		,trans_typ1
+		,trans_typ2
+		,st_region1
+		,st_region2
+		,st_region3
+		,st_region4
+		,st_region5
+		,st_region6
+		,ar_region1
+		,ar_region2
+		,ar_region3
+		,ar_region4
+		,ar_region5
+		,ar_region6
+		, (select code_nm from sys_codeinfo where code_cd = trans_typ1) as trans_typ1_nm
+		, (select code_nm from sys_codeinfo where code_cd = trans_typ2) as trans_typ2_nm
+		, (select region_nm from tb_region where code = st_region1) as st_region1_nm
+		, (select region_nm from tb_region where code = st_region2) as st_region2_nm
+		, (select region_nm from tb_region where code = st_region3) as st_region3_nm
+		, (select region_nm from tb_region where code = st_region4) as st_region4_nm
+		, (select region_nm from tb_region where code = st_region5) as st_region5_nm
+		, (select region_nm from tb_region where code = st_region6) as st_region6_nm
+		, (select region_nm from tb_region where code = ar_region1) as ar_region1_nm
+		, (select region_nm from tb_region where code = ar_region2) as ar_region2_nm
+		, (select region_nm from tb_region where code = ar_region3) as ar_region3_nm
+		, (select region_nm from tb_region where code = ar_region4) as ar_region4_nm
+		, (select region_nm from tb_region where code = ar_region5) as ar_region5_nm
+		, (select region_nm from tb_region where code = ar_region6) as ar_region6_nm
+		,reg_id
+		, DATE_FORMAT(reg_dt, '%Y-%m-%d %T') as reg_dt
+		,mod_id
+		, DATE_FORMAT(mod_dt, '%Y-%m-%d %T') as mod_dt
+	from route_mst
+	where route_no = #{route_no}
+</select>
+
+<insert id="insertRoute" parameterType="java.util.HashMap" >
+	insert into route_mst (
+		route_typ
+		,trans_typ1
+		,trans_typ2
+		,st_region1
+		,st_region2
+		,st_region3
+		,st_region4
+		,st_region5
+		,st_region6
+		,ar_region1
+		,ar_region2
+		,ar_region3
+		,ar_region4
+		,ar_region5
+		,ar_region6
+		,reg_id
+		,reg_dt
+	) values (
+		#{route_typ}
+		,#{trans_typ1}
+		,#{trans_typ2}
+		,#{st_region1}
+		,#{st_region2}
+		,#{st_region3}
+		,#{st_region4}
+		,#{st_region5}
+		,#{st_region6}
+		,#{ar_region1}
+		,#{ar_region2}
+		,#{ar_region3}
+		,#{ar_region4}
+		,#{ar_region5}
+		,#{ar_region6}
+		,#{reg_id}
+		,now()
+	)
+</insert>
+
+<update id="updateRoute" parameterType="java.util.HashMap" >
+	update route_mst set
+		route_typ = #{route_typ}
+		,trans_typ1 = #{trans_typ1}
+		,trans_typ2 = #{trans_typ2}
+		,st_region1 = #{st_region1}
+		,st_region2 = #{st_region2}
+		,st_region3 = #{st_region3}
+		,st_region4 = #{st_region4}
+		,st_region5 = #{st_region5}
+		,st_region6 = #{st_region6}
+		,ar_region1 = #{ar_region1}
+		,ar_region2 = #{ar_region2}
+		,ar_region3 = #{ar_region3}
+		,ar_region4 = #{ar_region4}
+		,ar_region5 = #{ar_region5}
+		,ar_region6 = #{ar_region6}
+		,mod_id = #{mod_id}
+		,mod_dt = now()
+	where route_no = #{route_no}
+</update>
+
+<delete id="deleteRoute" parameterType="java.util.HashMap">
+	delete from route_mst 
+	where route_no = #{route_no}
+</delete> 
+
+<select id="selectRegionListTree"  parameterType="java.util.HashMap"  resultType="java.util.HashMap">
+	select 
+		p1.code as id
+		,p1.upcode as parent_id
+		, case when sc.code_nm is null then p1.region_nm else concat( sc.code_nm, ' / ' ,p1.region_nm) end as name
+		,p1.div_cd
+		,sc.code_nm as div_nm
+		,p1.img_txt
+		,p1.url_txt
+		,p1.sort_seq
+		,p1.use_yn
+		, case when p2.code is null then 1
+			when p3.code is null then 2
+			when p4.code is null then 3
+			when p5.code is null then 4
+			else 5
+			end as levels
+		, case when p2.code is null then '지역관리'
+			when p3.code is null then p2.region_nm
+			else p2.region_nm
+			end as upcode_nm
+	from tb_region p1
+	left outer join tb_region p2 on p1.upcode = p2.code
+	left outer join tb_region p3 on p2.upcode = p3.code
+	left outer join tb_region p4 on p3.upcode = p4.code
+	left outer join tb_region p5 on p4.upcode = p5.code
+	left outer join sys_codeinfo sc on p1.div_cd = sc.code_cd
+	order by levels, sort_seq
+</select>
+
+<select id="selectRegionList"  parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select code
+		,upcode
+		,region_nm
+		,region_enm
+		,div_cd
+		,img_txt
+		,url_txt
+		,sort_seq
+		,use_yn
+		, (select count(0) from tb_region p2 where p2.upcode = p1.code) as cnt
+		,regstaff_id
+		,reg_dt
+		,modstaff_id
+		,mod_dt
+	from tb_region p1
+	where upcode = #{upcode}
+	order by sort_seq
+</select>
+
+<select id="selectRegionList2Depth"  parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select p1.code as up_code
+		,p1.region_nm as up_region_nm
+		,p1.region_enm as up_region_enm
+		, (select count(0) from tb_region where upcode = p1.code) as up_cnt
+		,p1.sort_seq as up_sort_seq
+		,p1.use_yn as up_use_yn
+		,p2.code as code
+		,p2.region_nm as region_nm
+		,p2.region_enm as region_enm
+		, (select count(0) from tb_region where upcode = p2.code) as cnt
+		,p2.sort_seq
+		,p2.use_yn
+	from tb_region p1
+	left join tb_region p2 on p1.code = p2.upcode
+ 	where p1.upcode = #{code}
+ 	<if test='use_yn !=null and use_yn != ""'>
+		and p1.use_yn = #{use_yn}
+		and p2.use_yn = #{use_yn}
+	</if>
+	order by  p1.sort_seq, p2.sort_seq
+</select>
+
+<select id="selectRegionInfo"  parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select a.code
+		,a.upcode
+		,(select region_nm from tb_region c where c.code = a.upcode) as upregion_nm
+		,a.region_nm
+		,a.region_enm
+		,a.div_cd
+		,a.img_txt
+		,a.url_txt
+		,a.sort_seq
+		,(select ifnull(max(sort_seq) + 1, 1) from tb_region b where b.upcode = a.code) as next_sort_seq
+		,a.use_yn
+		,a.regstaff_id
+		,a.reg_dt
+		,a.modstaff_id
+		,a.mod_dt
+	from tb_region a
+	where code = #{code}
+</select>
+
+<insert id="insertRegion" parameterType="java.util.HashMap" >
+	insert into tb_region (
+		upcode
+		,region_nm
+		,region_enm
+		,div_cd
+		,img_txt
+		,url_txt
+		,sort_seq
+		,use_yn
+		,regstaff_id
+		,reg_dt
+	) values (
+		#{upcode}
+		,#{region_nm}
+		,#{region_enm}
+		,#{div_cd}
+		,#{img_txt}
+		,#{url_txt}
+		,#{sort_seq}
+		,#{use_yn}
+		,#{regstaff_id}
+		,now()
+	)
+</insert>
+
+<update id="updateRegion" parameterType="java.util.HashMap" >
+	update tb_region set
+		region_nm = #{region_nm}
+		,region_enm = #{region_enm}
+		,div_cd = #{div_cd}
+		,img_txt = #{img_txt}
+		,url_txt = #{url_txt}
+		,sort_seq = #{sort_seq}
+		,use_yn = #{use_yn}
+		,modstaff_id = #{modstaff_id}
+		,mod_dt = now()
+	where code = #{code}
+</update>
+
+<update id="updateRegionSortSeq" parameterType="java.util.HashMap" >
+	update tb_region set
+		sort_seq = #{sort_seq}
+		,modstaff_id = #{modstaff_id}
+		,mod_dt = now()
+	where code = #{code}
+</update>
+
+<update id="updateRegionUseYn" parameterType="java.util.HashMap" >
+	update tb_region set
+		use_yn = #{use_yn}
+		,modstaff_id = #{modstaff_id}
+		,mod_dt = now()
+	where code = #{code}
+</update>
+
+<delete id="deleteRegion" parameterType="java.util.HashMap" >
+	delete from tb_region 
+	where code = #{code}
+</delete>
+
+<update id="updateMenuInfoDetail" parameterType="java.util.HashMap">
+	update sys_menuinfo set menu_nm = #{menu_nm}
+	,menu_nm_en = #{menu_nm_en}
+	,menu_nm_cn = #{menu_nm_cn}
+	,menuurl_txt = #{menuurl_txt}
+	,person_inf_yn = #{person_inf_yn}
+	,menu_yn = #{menu_yn}
+	,use_yn = #{use_yn}
+	,system_typ = #{system_typ}
+	,sort_seq = #{sort_seq}
+	,comment_txt = #{comment_txt}
+	,modstaff_id = #{modstaff_id}
+	where menu_id = #{menu_id_s}
+</update>
+
+<select id="selectMenuInfoDetailPop" parameterType="String" resultType="java.util.HashMap">
+	SELECT menu_id AS upmenu_id
+	  ,menu_nm AS upmenu_nm
+	  ,(CASE  WHEN (SELECT COUNT(1) FROM sys_menuinfo WHERE upmenu_id = a.menu_id) = 0 THEN 1
+			  ELSE (SELECT MAX(sort_seq) FROM sys_menuinfo WHERE upmenu_id = a.menu_id) END ) + 1 AS sort_seq
+  FROM sys_menuinfo a
+ WHERE menu_id = #{menu_id}
+</select>
+
+<select id="selectMenuGroupAuthDetailPop" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select * from sys_groupauth
+</select> 
+
+<delete id="deleteMenuListGroupAuth" parameterType="java.util.HashMap">
+	delete from sys_groupmenu 
+	where groupauth_id = #{groupauth_id} and menu_id = #{menu_id}
+</delete> 
+
+ 
+</mapper>

@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.MenuDAO">
+
+<select id="leftMenuList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	 SELECT A.GLEVEL AS LVL
+ 		, A.MENU_NM
+ 		, A.MENU_NM_EN
+ 		, A.MENU_NM_CN
+ 		, A.MENU_ID
+ 		, A.UPMENU_ID
+ 		, A.SCREEN_ID
+ 		, A.JS_URL
+ 		, A.MENUURL_TXT
+ 		, (SELECT IFNULL(COUNT(MENU_ID),0) FROM sys_menuinfo WHERE USE_YN = 'Y' AND UPMENU_ID = A.MENU_ID) AS CNT 
+	 from (
+					select p1.menu_id as MENU_ID
+					, ifnull(p1.upmenu_id, '99999') as UPMENU_ID
+					, p1.screen_id as SCREEN_ID
+					, p1.js_url as JS_URL
+					, p1.MENU_NM
+					, p1.MENU_NM_EN
+					, p1.MENU_NM_CN
+					, case when p2.menu_id is null then 0
+						when p3.menu_id is null then 1
+						when p4.menu_id is null then 2
+						else 3
+						end as GLEVEL
+					, p1.menuurl_txt as MENUURL_TXT
+					, p1.sort_seq as SORT
+					, p1.comment_txt
+					from sys_menuinfo p1
+					left join sys_menuinfo p2 on p1.upmenu_id = p2.menu_id
+					left join sys_menuinfo p3 on p2.upmenu_id = p3.menu_id
+					left join sys_menuinfo p4 on p3.upmenu_id = p4.menu_id
+					where p1.use_yn = 'Y'
+		) as A
+	 INNER JOIN (
+		 SELECT	b.menu_id
+		  FROM	sys_groupmenu b
+		 WHERE	b.groupauth_id = #{groupauth_id} 
+				and use_yn = 'Y'
+	) D ON A.MENU_ID = D.MENU_ID 	 
+	inner join sys_menuinfo sm on A.menu_id = sm.menu_id
+	 WHERE GLEVEL >= 1 
+	 ORDER BY A.UPMENU_ID, sm.sort_seq ASC
+</select>
+
+<select id="topMenuList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	 SELECT A.GLEVEL AS LVL	
+		<choose>
+			<when test='lang == "ko"'>
+			, A.MENU_NM
+			</when>
+			<when test='lang == "en"'>
+			, ifnull(A.MENU_NM_EN,A.MENU_NM) AS MENU_NM
+			</when>
+			<when test='lang == "cn"'>
+			, ifnull(A.MENU_NM_CN,A.MENU_NM) AS MENU_NM
+			</when>
+			<otherwise>
+			, A.MENU_NM
+			</otherwise>
+		</choose>
+ 		, A.MENU_ID
+ 		, A.UPMENU_ID
+ 		, A.SCREEN_ID
+ 		, A.JS_URL
+ 		, A.MENUURL_TXT
+ 		, (SELECT IFNULL(COUNT(MENU_ID),0) FROM sys_menuinfo WHERE USE_YN = 'Y' AND UPMENU_ID = A.MENU_ID) AS CNT 
+	 from (
+					select p1.menu_id as MENU_ID
+					, ifnull(p1.upmenu_id, '99999') as UPMENU_ID
+					, p1.screen_id as SCREEN_ID
+					, p1.js_url as JS_URL
+					, p1.MENU_NM
+					, p1.MENU_NM_EN
+					, p1.MENU_NM_CN
+					, case when p2.menu_id is null then 0
+						when p3.menu_id is null then 1
+						when p4.menu_id is null then 2
+						else 3
+						end as GLEVEL
+					, p1.menuurl_txt as MENUURL_TXT
+					, p1.sort_seq as SORT
+					, p1.comment_txt
+					, case when p2.menu_id is null then '0000000000'
+						when p3.menu_id is null then concat(p1.sort_seq,'-',p1.menu_id,'0')
+						when p4.menu_id is null then concat(p2.sort_seq,'-',p1.upmenu_id,p3.sort_seq)
+						else concat(p2.upmenu_id,p2.menu_id)
+						end as sortTxt					
+					from sys_menuinfo p1
+					left join sys_menuinfo p2 on p1.upmenu_id = p2.menu_id
+					left join sys_menuinfo p3 on p2.upmenu_id = p3.menu_id
+					left join sys_menuinfo p4 on p3.upmenu_id = p4.menu_id
+					where p1.use_yn = 'Y'
+		) as A
+	 INNER JOIN (
+		 SELECT	b.menu_id
+		  FROM	sys_groupmenu b
+		 WHERE	b.groupauth_id = #{groupauth_id} 
+				and use_yn = 'Y'
+	) D ON A.MENU_ID = D.MENU_ID 	 
+	inner join sys_menuinfo sm on A.menu_id = sm.menu_id
+	 WHERE GLEVEL >= 1 
+	 ORDER BY A.sortTxt, sm.sort_seq ASC
+</select>
+
+<select id="selectMenuListTree"  parameterType="String"  resultType="java.util.HashMap">
+select * from (
+	select p1.menu_id as id
+	, p1.screen_id
+	, p1.js_url
+	, case when p1.comment_txt = '' or p1.comment_txt is null then p1.menu_nm else  concat(p1.menu_nm,'  - ', ifnull(p1.comment_txt, '')) end as name
+	, ifnull(p1.upmenu_id, '99999') as parent_id
+	, p1.sort_seq
+	, case when p2.menu_id is null then lpad(convert(p1.menu_id, char(5)), 5, '0')
+			when p3.menu_id is null then concat(lpad(convert(p2.menu_id, char(5)), 5, '0'), lpad(convert(p1.menu_id, char(5)), 55, '0'))
+			else concat(lpad(convert(p3.menu_id, char(5)), 5, '0'),lpad(convert(p2.menu_id, char(5)), 5, '0'), lpad(convert(p1.menu_id, char(5)), 5, '0'))
+	end as seq_char
+	, case when p2.menu_id is null then 1
+		when p3.menu_id is null then 2
+		else 3
+		end as levels
+	,concat(p2.menu_nm , '/' , p1.menu_nm) AS full_name
+	,p1.menuurl_txt
+	,p1.menu_yn
+	,p1.person_inf_yn
+	,p1.use_yn
+	from sys_menuinfo p1
+	left join sys_menuinfo p2 on p1.upmenu_id = p2.menu_id
+	left join sys_menuinfo p3 on p2.upmenu_id = p3.menu_id
+) a
+order by a.levels, a.sort_seq
+</select>
+
+<select id="selectMenuListGroupAuthList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	SELECT a.groupauth_id
+	      , b.groupauth_nm
+	      , a.use_yn
+	      , #{menu_id_s} AS menu_id
+	      , 'Y' AS flag_yn
+	  FROM sys_groupmenu a
+	  LEFT OUTER JOIN sys_groupauth b
+	    ON a.groupauth_id = b.groupauth_id
+	 WHERE menu_id = #{menu_id_s}
+</select>
+
+<select id="selectMenuInfoDetail" parameterType="String" resultType="java.util.HashMap">
+	select * from sys_menuinfo where menu_id = #{menu_id_s}
+</select>
+ 
+ <update id="updateMenuListGroupAuth"  parameterType="java.util.HashMap">
+ 	update sys_groupmenu set use_yn = #{use_yn}
+		,modstaff_id = #{modstaff_id}
+		,mod_dt = now()
+	where groupauth_id = #{groupauth_id}
+	and menu_id = #{menu_id}		
+ </update>
+  
+<insert id="insertMenuListGroupAuth" parameterType="java.util.HashMap" >
+	insert into sys_groupmenu(
+		groupauth_id
+		,menu_id
+		,use_yn
+		,regstaff_id
+		,reg_dt
+	) values (
+		#{groupauth_id}
+		,#{menu_id}
+		,#{use_yn}
+		,#{regstaff_id}
+		,now()
+	)
+</insert>  
+
+<update id="updateMenuInfoDetail" parameterType="java.util.HashMap">
+	update sys_menuinfo set menu_nm = #{menu_nm}
+	,menu_nm_en = #{menu_nm_en}
+	,menu_nm_cn = #{menu_nm_cn}
+	,menuurl_txt = #{menuurl_txt}
+	,screen_id = #{screen_id}
+	,js_url = #{js_url}
+	,person_inf_yn = #{person_inf_yn}
+	,menu_yn = #{menu_yn}
+	,use_yn = #{use_yn}
+	,system_typ = #{system_typ}
+	,sort_seq = #{sort_seq}
+	,comment_txt = #{comment_txt}
+	,modstaff_id = #{modstaff_id}
+	where menu_id = #{menu_id_s}
+</update>
+
+<delete id="deleteMenuInfoDetail" parameterType="java.util.HashMap">
+	delete from sys_menuinfo
+	where menu_id = #{menu_id_s}
+</delete>
+
+<select id="selectMenuInfoDetailPop" parameterType="String" resultType="java.util.HashMap">
+	SELECT menu_id AS upmenu_id
+	  ,menu_nm AS upmenu_nm
+	  ,(CASE  WHEN (SELECT COUNT(1) FROM sys_menuinfo WHERE upmenu_id = a.menu_id) = 0 THEN 1
+			  ELSE (SELECT MAX(sort_seq) FROM sys_menuinfo WHERE upmenu_id = a.menu_id) END ) + 1 AS sort_seq
+  FROM sys_menuinfo a
+ WHERE menu_id = #{menu_id}
+</select>
+
+<insert id="insertMenuInfoDetailPop" parameterType="java.util.HashMap" >
+	insert into sys_menuinfo(
+		upmenu_id
+		,menu_nm
+		,menu_nm_en
+		,menu_nm_cn
+		,screen_id
+		,js_url
+		,menuurl_txt
+		,person_inf_yn
+		,menu_yn
+		,use_yn
+		,system_typ
+		,sort_seq
+		,comment_txt
+		,regstaff_id
+		,reg_dt
+	) values (
+		#{upmenu_id}
+		,#{menu_nm}
+		,#{menu_nm_en}
+		,#{menu_nm_cn}
+		,#{screen_id}
+		,#{js_url}
+		,#{menuurl_txt}
+		,#{person_inf_yn}
+		,#{menu_yn}
+		,#{use_yn}
+		,#{system_typ}
+		,#{sort_seq}
+		,#{comment_txt}
+		,#{regstaff_id}
+		,now()
+	)
+</insert>  
+
+
+
+<select id="selectMenuGroupAuthDetailPop" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select * from sys_groupauth
+</select> 
+
+<delete id="deleteMenuListGroupAuth" parameterType="java.util.HashMap">
+	delete from sys_groupmenu 
+	where groupauth_id = #{groupauth_id} and menu_id = #{menu_id}
+</delete> 
+
+ 
+</mapper>

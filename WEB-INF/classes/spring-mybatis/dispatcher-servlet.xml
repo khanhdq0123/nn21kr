@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    - DispatcherServlet application context for Application's web tier.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans" 
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:context="http://www.springframework.org/schema/context"
+		xmlns:p="http://www.springframework.org/schema/p"
+		xmlns:tx="http://www.springframework.org/schema/tx"
+		xmlns:mvc="http://www.springframework.org/schema/mvc"
+		xsi:schemaLocation="http://www.springframework.org/schema/beans 
+			http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+			http://www.springframework.org/schema/context 
+			http://www.springframework.org/schema/context/spring-context-3.2.xsd
+			http://www.springframework.org/schema/tx 
+			http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+			http://www.springframework.org/schema/mvc 
+			http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd">	
+			
+	<mvc:annotation-driven />	
+	
+	<mvc:resources mapping="/css/**" location="/css/" />
+	<mvc:resources mapping="/fonts/**" location="/fonts/" />
+	<mvc:resources mapping="/js/**" location="/js/" />
+	<mvc:resources mapping="/common/**" location="/common/" />
+	<mvc:resources mapping="/images/**" location="/images/" />
+	<mvc:resources mapping="/files/**" location="/files/" />
+
+			
+    <!--
+        - The controllers are autodetected POJOs labeled with the @Controller annotation.
+    -->
+    <!-- Load @Controllers only -->
+	<context:component-scan base-package="com" use-default-filters="false">
+	    <context:include-filter expression="org.springframework.stereotype.Controller" 
+	        type="annotation"/>
+	</context:component-scan>
+	<context:component-scan base-package="sample" use-default-filters="false">
+	    <context:include-filter expression="org.springframework.stereotype.Controller" 
+	        type="annotation"/>
+	</context:component-scan>
+    
+<!--     <tx:annotation-driven transaction-manager="transactionManager" />	 -->
+<!-- 	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager"> -->
+<!--  		<property name="dataSource" ref="dataSource" /> -->
+<!-- 	</bean> -->
+    
+<!--     <tx:annotation-driven transaction-manager="transactionManager_mysql" />	 -->
+<!-- 	<bean id="transactionManager_mysql" class="org.springframework.jdbc.datasource.DataSourceTransactionManager"> -->
+<!--  		<property name="dataSource" ref="dataSource_mysql" /> -->
+<!-- 	</bean> -->
+	
+	<tx:annotation-driven transaction-manager="transactionManager_maria" />	
+	<bean id="transactionManager_maria" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+ 		<property name="dataSource" ref="dataSource_maria" />
+	</bean>
+	
+    <!--
+        - The form-based controllers within this application provide @RequestMapping 
+        - annotations at the type level for path mapping URLs and @RequestMapping 
+        - at the method level for request type mappings (e.g., GET and POST). 
+        - In contrast, ClinicController - which is not form-based - provides 
+        - @RequestMapping only at the method level for path mapping URLs.
+        -
+        - DefaultAnnotationHandlerMapping is driven by these annotations and is 
+        - enabled by default with Java 5+.a
+    -->
+    <!--
+        - This bean processes annotated handler methods, applying Application-specific PropertyEditors
+        - for request parameter binding. It overrides the default AnnotationMethodHandlerAdapter.
+     --> 
+    <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"> 
+    </bean>
+    
+    <bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"/>
+    <!--
+        - This bean configures the 'prefix' and 'suffix' properties of 
+        - InternalResourceViewResolver, which resolves logical view names 
+        - returned by Controllers. For example, a logical view name of "vets" 
+        - will be mapped to "/WEB-INF/jsp/vets.jsp".
+    -->
+    <bean class="org.springframework.web.servlet.view.UrlBasedViewResolver" p:order="1" 
+    p:viewClass="org.springframework.web.servlet.view.JstlView" 
+    p:prefix="/WEB-INF/jsp/" p:suffix=".jsp"/>
+		
+	<!-- Error Page -->
+<!-- 	<bean id="exceptionResolver" class="com.top.log.ExceptionLogResolver"> -->
+<!--         <property name="exceptionMappings"> -->
+<!--             <props>                               	            	 -->
+<!--                 <prop key="defaultErrorView">/common/error/error</prop> -->
+<!--             </props> -->
+<!--         </property> -->
+<!--     </bean> -->
+	
+	<!-- 로그인 여부 체크 Interceptor -->	
+	<mvc:interceptors>
+		 <mvc:interceptor>
+			<mvc:mapping path="/**" />
+			<mvc:exclude-mapping path="/index.jsp"/>
+			<mvc:exclude-mapping path="/member/login/**"/>
+			<mvc:exclude-mapping path="/common/**"/>
+			<mvc:exclude-mapping path="/css/**"/>
+			<mvc:exclude-mapping path="/js/**"/>
+			<mvc:exclude-mapping path="/images/**"/>
+			<mvc:exclude-mapping path="/join/**"/>
+			<mvc:exclude-mapping path="/interface/product/**"/>
+			<mvc:exclude-mapping path="/interface/order/**"/>
+			<mvc:exclude-mapping path="/interface/board/**"/>
+			<mvc:exclude-mapping path="/interface/partner/**"/>
+			<mvc:exclude-mapping path="/partner/businessKindListJson"/>
+			<mvc:exclude-mapping path="/system/staff/loginIdDupPop"/>
+			<mvc:exclude-mapping path="/system/staff/staffListJson"/>
+			<mvc:exclude-mapping path="/system/staff/staffSnsListJson"/>
+			<mvc:exclude-mapping path="/region/**"/>
+			<mvc:exclude-mapping path="/notice/**"/>
+			
+			<mvc:exclude-mapping path="/order/order/telPaymentProcess.do"/>
+			<bean class="com.nn21.common.LoginCheckInterceptor"/>
+		 </mvc:interceptor>	
+	</mvc:interceptors>	
+
+
+	<bean id="localeChangeInterceptor" class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor">
+		<property name="paramName" value="lang" />
+	</bean>
+
+	<mvc:interceptors>
+	   <ref bean="localeChangeInterceptor"/>
+	 </mvc:interceptors>
+
+	<!-- 응답 Cache 방지 -->
+	<mvc:interceptors>
+	    <bean id="webContentInterceptor" 
+	          class="org.springframework.web.servlet.mvc.WebContentInterceptor">
+	        <property name="cacheSeconds" value="0"/>
+	        <property name="useExpiresHeader" value="true"/>
+	        <property name="useCacheControlHeader" value="true"/>
+	        <property name="useCacheControlNoStore" value="true"/>
+	    </bean>
+	</mvc:interceptors>
+</beans>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.StartUp">
+
+<select id="selectCodeList" resultType="java.util.HashMap">
+	select *
+	from sys_codeinfo
+	where code_cd != '00000'
+	and use_yn = 'Y'
+	order by upcode_cd asc, sort_seq asc, code_cd asc
+</select>
+
+<select id="selectMenuList" resultType="java.util.HashMap">
+	SELECT
+		cast(menu_id as char) as menu_id, menuurl_txt
+	FROM sys_menuinfo
+	WHERE menuurl_txt is not null;
+</select>
+</mapper>

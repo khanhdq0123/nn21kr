@@ -1,0 +1,582 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="priceList.PriceListDAO">
+
+<insert id="getPlMstSeq" parameterType="com.nn21.dto.SequenceDto">
+	insert into sq_pl_mst(seq) values(0)
+	<selectKey keyProperty="seq" resultType="int" >select last_insert_id()</selectKey>
+</insert>
+
+<select id="selectPlTagList"  parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select t.code
+	, t.code_nm
+	, t.upcode
+	, t.upcode_nm
+	, t.glevel
+	, case when t.glevel = 1 then t.cnt2 when t.glevel = 2 then t.cnt else 0 end as colspan
+	from 
+	(
+		select a.* 
+		, (select count(0) from pl_tag where upcode = a.code) as cnt
+		, (select count(0) from pl_tag where upcode in (select b.code from pl_tag b where b.upcode = a.code)    ) as cnt2
+		from 
+		(
+			select p1.code as code
+			, ifnull(p1.upcode, '') as upcode
+			, (select code_nm from pl_tag where code = p1.upcode) as upcode_nm
+			, p1.code_nm
+			, case when p2.code is null then 0
+				when p3.code is null then 1
+				when p4.code is null then 2
+				else 3
+				end as glevel
+			from pl_tag p1
+			left join pl_tag p2 on p1.upcode = p2.code
+			left join pl_tag p3 on p2.upcode = p3.code
+			left join pl_tag p4 on p3.upcode = p4.code 
+			order by glevel, code
+		) a	
+	) t
+	where t.glevel != 2 or t.cnt != 0
+	order by t.glevel, t.code
+
+</select>
+
+<select id="selectPlList"  parameterType="java.util.HashMap" resultType="java.util.HashMap">
+select b.pl_nm, b.pl_standard, b.pl_volume ,a.*  from (		
+		select pl_mst_no
+		, format(max(p10101),0) as p10101
+		, format(max(p10102),0) as p10102
+		, format(max(p10103),0) as p10103
+		, format(max(p10104),0) as p10104
+		, format(max(p10201),0) as p10201
+		, format(max(p10202),0) as p10202
+		, format(max(p10203),0) as p10203
+		, format(max(p10204),0) as p10204
+		, format(max(p10301),0) as p10301
+		, format(max(p10302),0) as p10302
+		, format(max(p10401),0) as p10401
+		, format(max(p10402),0) as p10402
+		, format(max(p10403),0) as p10403
+		, format(max(p10404),0) as p10404
+		, format(max(p10405),0) as p10405
+		, format(max(p10406),0) as p10406
+		, format(max(p10501),0) as p10501
+		, format(max(p20101),0) as p20101
+		, format(max(p20102),0) as p20102
+		, format(max(p20201),0) as p20201
+		, format(max(p20301),0) as p20301
+		, format(max(p20302),0) as p20302
+		, format(max(p20303),0) as p20303
+		, format(max(p20304),0) as p20304
+		, format(max(p30101),0) as p30101
+		, format(max(p30102),0) as p30102
+		, format(max(p30103),0) as p30103
+		, format(max(p30104),0) as p30104
+		, format(max(p30105),0) as p30105
+		, format(max(p30201),0) as p30201
+		, format(max(p30202),0) as p30202
+		, format(max(p30203),0) as p30203
+		, format(max(p30204),0) as p30204
+		, format(max(p30301),0) as p30301
+		, format(max(p30302),0) as p30302
+		, format(max(p30303),0) as p30303
+		, format(max(p30304),0) as p30304
+		, format(max(p30401),0) as p30401
+		, format(max(p30402),0) as p30402
+		, format(max(p30501),0) as p30501
+		, format(max(p30502),0) as p30502
+		, format(max(p40101),0) as p40101
+		, format(max(p40102),0) as p40102
+		from (
+			select pl_mst_no
+			, case when plt_no = 10101 then price end as p10101
+			, case when plt_no = 10102 then price end as p10102
+			, case when plt_no = 10103 then price end as p10103
+			, case when plt_no = 10104 then price end as p10104
+			, case when plt_no = 10201 then price end as p10201
+			, case when plt_no = 10202 then price end as p10202
+			, case when plt_no = 10203 then price end as p10203
+			, case when plt_no = 10204 then price end as p10204
+			, case when plt_no = 10301 then price end as p10301
+			, case when plt_no = 10302 then price end as p10302
+			, case when plt_no = 10401 then price end as p10401
+			, case when plt_no = 10402 then price end as p10402
+			, case when plt_no = 10403 then price end as p10403
+			, case when plt_no = 10404 then price end as p10404
+			, case when plt_no = 10405 then price end as p10405
+			, case when plt_no = 10406 then price end as p10406
+			, case when plt_no = 10501 then price end as p10501
+			, case when plt_no = 20101 then price end as p20101
+			, case when plt_no = 20102 then price end as p20102
+			, case when plt_no = 20201 then price end as p20201
+			, case when plt_no = 20301 then price end as p20301
+			, case when plt_no = 20302 then price end as p20302
+			, case when plt_no = 20303 then price end as p20303
+			, case when plt_no = 20304 then price end as p20304
+			, case when plt_no = 30101 then price end as p30101
+			, case when plt_no = 30102 then price end as p30102
+			, case when plt_no = 30103 then price end as p30103
+			, case when plt_no = 30104 then price end as p30104
+			, case when plt_no = 30105 then price end as p30105
+			, case when plt_no = 30201 then price end as p30201
+			, case when plt_no = 30202 then price end as p30202
+			, case when plt_no = 30203 then price end as p30203
+			, case when plt_no = 30204 then price end as p30204
+			, case when plt_no = 30301 then price end as p30301
+			, case when plt_no = 30302 then price end as p30302
+			, case when plt_no = 30303 then price end as p30303
+			, case when plt_no = 30304 then price end as p30304
+			, case when plt_no = 30401 then price end as p30401
+			, case when plt_no = 30402 then price end as p30402
+			, case when plt_no = 30501 then price end as p30501
+			, case when plt_no = 30502 then price end as p30502
+			, case when plt_no = 40101 then price end as p40101
+			, case when plt_no = 40102 then price end as p40102		
+			from pl_dtl
+		) t
+		group by pl_mst_no
+) a
+inner join pl_mst b on a.pl_mst_no = b.pl_mst_no
+</select>
+
+<select id="selectPlTagList4Combo"  parameterType="java.util.HashMap" resultType="java.util.HashMap">
+select * from pl_tag
+where upcode = #{upcode}
+</select>
+
+<select id="selectPlTagCode"  parameterType="java.util.HashMap" resultType="String">
+	select max(code) + #{step} from pl_tag where upcode = #{upcode}
+</select>
+
+<select id="selectPlTagCodeMin"  parameterType="java.util.HashMap" resultType="String">
+	select a.seq
+	<if test="step.equalsIgnoreCase('10000')">
+	from seq_10000_to_90000_step_10000 a
+	</if>
+	<if test="step.equalsIgnoreCase('100') and snum gt 10000 and enum lt 12000">
+	from seq_10100_to_12000_step_100 a
+	</if>
+	<if test="step.equalsIgnoreCase('100') and snum gt 20000 and enum lt 22000">
+	from seq_20100_to_22000_step_100 a
+	</if>
+	<if test="step.equalsIgnoreCase('100') and snum gt 30000 and enum lt 32000">
+	from seq_30100_to_32000_step_100 a
+	</if>
+	<if test="step.equalsIgnoreCase('100') and snum gt 40000 and enum lt 42000">
+	from seq_40100_to_42000_step_100 a
+	</if>
+	<if test="step.equalsIgnoreCase('100') and snum gt 50000 and enum lt 52000">
+	from seq_50100_to_52000_step_100 a
+	</if>
+	<if test="step.equalsIgnoreCase('100') and snum gt 60000 and enum lt 62000">
+	from seq_60100_to_62000_step_100 a
+	</if>
+	<if test="step.equalsIgnoreCase('100') and snum gt 70000 and enum lt 72000">
+	from seq_70100_to_72000_step_100 a
+	</if>
+	<if test="step.equalsIgnoreCase('100') and snum gt 80000 and enum lt 82000">
+	from seq_80100_to_82000_step_100 a
+	</if>
+	<if test="step.equalsIgnoreCase('100') and snum gt 90000 and enum lt 92000">
+	from seq_90100_to_92000_step_100 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 10100 and enum lt 10120">
+	from seq_10101_to_10120 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 10200 and enum lt 10220">
+	from seq_10201_to_10220 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 10300 and enum lt 10320">
+	from seq_10301_to_10320 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 10400 and enum lt 10420">
+	from seq_10401_to_10420 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 10500 and enum lt 10520">
+	from seq_10501_to_10520 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 10600 and enum lt 10620">
+	from seq_10601_to_10620 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 10700 and enum lt 10720">
+	from seq_10701_to_10720 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 10800 and enum lt 10820">
+	from seq_10801_to_10820 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 10900 and enum lt 10920">
+	from seq_10901_to_10920 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 20100 and enum lt 20120">
+	from seq_20101_to_20120 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 20200 and enum lt 20220">
+	from seq_20201_to_20220 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 20300 and enum lt 20320">
+	from seq_20301_to_20320 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 20400 and enum lt 20420">
+	from seq_20401_to_20420 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 20500 and enum lt 20520">
+	from seq_20501_to_20520 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 20600 and enum lt 20620">
+	from seq_20601_to_20620 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 20700 and enum lt 20720">
+	from seq_20701_to_20720 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 20800 and enum lt 20820">
+	from seq_20801_to_20820 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 20900 and enum lt 20920">
+	from seq_20901_to_20920 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 30100 and enum lt 30120">
+	from seq_30101_to_30120 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 30200 and enum lt 30220">
+	from seq_30201_to_30220 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 30300 and enum lt 30320">
+	from seq_30301_to_30320 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 30400 and enum lt 30420">
+	from seq_30401_to_130420 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 30500 and enum lt 30520">
+	from seq_30501_to_30520 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 30600 and enum lt 30620">
+	from seq_30601_to_30620 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 30700 and enum lt 30720">
+	from seq_30701_to_30720 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 30800 and enum lt 30820">
+	from seq_30801_to_30820 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 30900 and enum lt 30920">
+	from seq_30901_to_30920 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 40100 and enum lt 40120">
+	from seq_40101_to_40120 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 40200 and enum lt 40220">
+	from seq_40201_to_40220 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 40300 and enum lt 40320">
+	from seq_40301_to_40320 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 40400 and enum lt 40420">
+	from seq_40401_to_40420 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 40500 and enum lt 40520">
+	from seq_40501_to_40520 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 40600 and enum lt 40620">
+	from seq_40601_to_40620 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 40700 and enum lt 40720">
+	from seq_40701_to_40720 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 40800 and enum lt 40820">
+	from seq_40801_to_40820 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 40900 and enum lt 40920">
+	from seq_40901_to_40920 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 50100 and enum lt 50120">
+	from seq_50101_to_50120 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 50200 and enum lt 50220">
+	from seq_50201_to_50220 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 50300 and enum lt 50320">
+	from seq_50301_to_50320 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 50400 and enum lt 50420">
+	from seq_50401_to_50420 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 50500 and enum lt 50520">
+	from seq_50501_to_50520 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 50600 and enum lt 50620">
+	from seq_50601_to_50620 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 50700 and enum lt 50720">
+	from seq_50701_to_50720 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 50800 and enum lt 50820">
+	from seq_50801_to_50820 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 50900 and enum lt 50920">
+	from seq_50901_to_50920 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 60100 and enum lt 60120">
+	from seq_60101_to_60120 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 60200 and enum lt 60220">
+	from seq_60201_to_60220 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 60300 and enum lt 60320">
+	from seq_60301_to_60320 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 60400 and enum lt 60420">
+	from seq_60401_to_60420 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 60500 and enum lt 60520">
+	from seq_60501_to_60520 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 60600 and enum lt 60620">
+	from seq_60601_to_60620 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 60700 and enum lt 60720">
+	from seq_60701_to_60720 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 60800 and enum lt 60820">
+	from seq_60801_to_60820 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 60900 and enum lt 60920">
+	from seq_60901_to_60920 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 70100 and enum lt 70120">
+	from seq_70101_to_70120 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 70200 and enum lt 70220">
+	from seq_70201_to_70220 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 70300 and enum lt 70320">
+	from seq_70301_to_70320 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 70400 and enum lt 70420">
+	from seq_70401_to_70420 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 70500 and enum lt 70520">
+	from seq_70501_to_70520 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 70600 and enum lt 70620">
+	from seq_70601_to_70620 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 70700 and enum lt 70720">
+	from seq_70701_to_70720 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 70800 and enum lt 70820">
+	from seq_70801_to_70820 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 70900 and enum lt 70920">
+	from seq_70901_to_70920 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 80100 and enum lt 80120">
+	from seq_80101_to_80120 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 80200 and enum lt 80220">
+	from seq_80201_to_80220 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 80300 and enum lt 80320">
+	from seq_80301_to_80320 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 80400 and enum lt 80420">
+	from seq_80401_to_80420 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 880500 and enum lt 80520">
+	from seq_80501_to_80520 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 80600 and enum lt 80620">
+	from seq_80601_to_80620 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 80700 and enum lt 80720">
+	from seq_80701_to_80720 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 80800 and enum lt 80820">
+	from seq_80801_to_80820 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 80900 and enum lt 80920">
+	from seq_80901_to_80920 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 90100 and enum lt 90120">
+	from seq_90101_to_90120 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 90200 and enum lt 90220">
+	from seq_90201_to_90220 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 90300 and enum lt 90320">
+	from seq_90301_to_90320 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 90400 and enum lt 90420">
+	from seq_90401_to_90420 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 90500 and enum lt 90520">
+	from seq_90501_to_90520 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 90600 and enum lt 90620">
+	from seq_90601_to_90620 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 90700 and enum lt 90720">
+	from seq_90701_to_90720 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 90800 and enum lt 90820">
+	from seq_90801_to_90820 a
+	</if>
+	<if test="step.equalsIgnoreCase('1') and snum gt 90900 and enum lt 90920">
+	from seq_90901_to_90920 a
+	</if>
+	left join pl_tag b on b.code = a.seq and b.upcode = #{upcode} where b.code is null
+	and a.seq <![CDATA[<=]]> (select max(c.code) from pl_tag c where c.upcode = #{upcode})
+</select>
+
+
+
+<insert id="insertPlTag" parameterType="java.util.HashMap">
+	insert into pl_tag(
+		code
+		,code_nm
+		,sort_seq
+		,glevel
+		,upcode
+		,upcode_nm
+		,unit_cd
+		,unit_nm 
+	) values(
+		#{code}
+		,#{code_nm}
+		,#{sort_seq}
+		,#{glevel}
+		,#{upcode}
+		,#{upcode_nm}
+		,#{unit_cd}
+		,#{unit_nm}
+		)
+</insert>
+
+<insert id="insertPlMst" parameterType="java.util.HashMap">
+	insert into pl_mst(
+		pl_mst_no
+		,pl_nm
+		,pl_standard
+		,pl_volume
+		,reg_id
+		,reg_dt
+	) values(
+		#{pl_mst_no}
+		,#{pl_nm}
+		,#{pl_standard}
+		,#{pl_volume}
+		,#{reg_id}
+		,now()
+		)
+</insert>
+
+<insert id="insertPlDtl" parameterType="java.util.HashMap">
+	insert into pl_dtl(
+		pl_mst_no
+		,plt_no
+		,price
+		,reg_id
+		,reg_dt
+	) values(
+		#{pl_mst_no}
+		,#{plt_no}
+		,#{price}
+		,#{reg_id}
+		,now()
+		)
+</insert>
+
+
+<update id="updatePlTag" parameterType="java.util.HashMap">
+	update pl_tag set code_nm = #{code_nm}
+	,sort_seq = #{sort_seq}
+	,mod_id = #{mod_id}
+	,mod_dt = now()
+	where code = #{code}
+</update>
+
+<delete id="deletePlTag" parameterType="java.util.HashMap" >
+	delete from pl_tag 
+	where code = #{code}
+</delete>
+
+<delete id="deletePlTag2Depth" parameterType="java.util.HashMap" >
+	delete from pl_tag 
+	where upcode = #{code}
+</delete>
+
+<delete id="deletePlTag3Depth" parameterType="java.util.HashMap" >
+	delete a from pl_tag a
+	inner join pl_tag b on a.upcode = b.code
+	where b.upcode = #{code}
+</delete>
+
+<select id="selectPlTag"  parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select a.*
+	, (select count(0) from pl_tag b where b.upcode = a.upcode ) as siblings_cnt
+	from pl_tag a
+	where a.code = #{code}
+</select>
+
+
+<select id="selectPlMapList"  parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select 
+	pl_typ
+	,tag_no
+	,tag_nm
+	,uptag_no
+	,uptag_nm
+	,reg_id
+	, DATE_FORMAT(reg_dt, '%Y-%m-%d %T') as reg_dt
+	,mod_id
+	, DATE_FORMAT(mod_dt, '%Y-%m-%d %T') as mod_dt
+	from pl_map
+	where 1=1
+	<if test="pl_typ != null and pl_typ != ''">
+	and pl_typ = #{pl_typ}
+	</if>
+	order by reg_dt desc
+</select>
+
+<insert id="insertPlMap" parameterType="java.util.HashMap">
+	insert into pl_map(
+		pl_typ
+		,tag_no
+		,tag_nm
+		,uptag_no
+		,uptag_nm
+		,reg_id
+		,reg_dt
+	) values(
+		#{pl_typ}
+		,#{tag_no}
+		,#{tag_nm}
+		,#{uptag_no}
+		,#{uptag_nm}
+		,#{reg_id}
+		,now()
+	)
+</insert>
+
+<update id="updatePlMap" parameterType="java.util.HashMap">
+	update pl_map 
+	set code_nm = #{code_nm}
+	,sort_seq = #{sort_seq}
+	,mod_id = #{mod_id}
+	,mod_dt = now()
+	where 1=1
+	and pl_typ = #{pl_typ}
+	and tag_no = #{tag_no}
+</update>
+
+<delete id="deletePlMap" parameterType="java.util.HashMap" >
+	delete from pl_map 
+	where 1=1
+	and pl_typ = #{pl_typ}
+	and tag_no = #{tag_no}
+</delete>
+
+
+
+ 
+</mapper>

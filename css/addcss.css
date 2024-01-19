@@ -1,0 +1,40 @@
+@charset "utf-8";
+
+.tagCover {overflow:hidden; clear:both; margin-bottom:10px;}
+
+.typeleft {width:48%; float:left; margin-left:20px; position:relative;}
+.typeright {width:48%; float:right; position:relative;}
+
+.styleH3 {padding:10px 0 5px 10px;}
+.tagCover table { margin-top:10px;}
+.layer_tbl.addTable {text-align:center;}
+.layer_tbl.addTable th {text-align:center; border-left:1px solid #e5e5e5;}
+.layer_tbl.addTable th:first-child {border-left:0;}
+.layer_tbl.addTable td {border-left:1px solid #e5e5e5;}
+.layer_tbl.addTable td:first-child {border-left:0;}
+.layer_tbl.addTable td > a {text-decoration:underline;}
+
+ul.itemList {clear:both; overflow:hidden; margin:10px 0; background:#f3f3f3; padding:10px 5px; border:1px solid #e5e5e5;}
+ul.itemList li {float:left; width:20%;}
+ul.itemList li p {text-align:center;}
+ul.itemList li p > a > img {width:70px; height:70px;}
+ul.itemList li p > a > b {display:block; margin:5px 0 3px 0;}
+ul.itemList li p > a > span {display:block;}
+
+
+.qnaWlist ul {margin:10px 0; background:#fafafa; padding:10px 5px; border:1px solid #e5e5e5;}
+.qnaWlist ul li {clear:both; overflow:hidden; padding:5px 0 5px 10px; border-bottom:1px solid #e5e5e5;}
+.qnaWlist ul li span {float:left; display:inline-block;}
+.qnaWlist ul li span.titSpan {padding-left:10px; width:76%; text-align:left;}
+.qnaWlist ul li span.titSpan > a {text-decoration:underline;}
+.qnaWlist ul li span.idSpan {width:20%; text-align:center;}
+.qnaWlist ul li span.dateSpan {width:18%; text-align:center;}
+.qnaWlist > span.qnaMore {position:absolute; top:13px; right:13px; display:inline-block; width:52px; height:16px; line-height:16px; text-align:center; }
+.qnaWlist > span.qnaMore > button {background:transparent; color:#fff; margin-top:-1px;}
+
+/* 즐겨찾기 수정 */
+div.favDiv {width:500px; padding:0 10px; background:#eee;}
+.facHeader {background:#3a769f; height:33px; padding:0 10px;}
+.facHeader > h3 {color:#fff; font-size:14px; line-height:32px; text-align:left;}
+div.btnArea {text-align:right; padding:5px 0;}
+div.btnArea button {background:#70b1dd; color:#fff; padding:4px 10px 3px; overflow:hidden; margin:0; margin-left:5px;}

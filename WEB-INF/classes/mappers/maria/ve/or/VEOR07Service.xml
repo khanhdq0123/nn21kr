@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="VEOR07Service">
+ 
+	<select id="getSearch" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select m.ord_no
+			,m.ord_typ
+			,case when(m.ord_typ = '1') then '운송접수' when(m.ord_typ = '2') then '보관접수' when(m.ord_typ = '3') then '견적접수'
+			 when(m.ord_typ = '4') then '원산지접수' when(m.ord_typ = '5') then '통관접수' end as ord_typ_nm
+			,m.send_no
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.send_no) as send_nm
+			, (select v.vendor_cd from ven_vendorinfo v where v.vendor_no = m.send_no) as send_cd
+			,m.receive_no
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.receive_no) as receive_nm
+			, (select v.vendor_cd from ven_vendorinfo v where v.vendor_no = m.receive_no) as receive_cd
+			,m.send_trade_comp_no
+			,m.receive_trade_comp_no
+			,m.send_cc_comp_no
+			,m.receive_cc_comp_no
+			,m.shipping_region_no
+			,m.send_region_no
+			,m.receive_region_no
+			, (select r.region_nm from tb_region r where r.code = m.shipping_region_no) as shipping_region_nm
+			, (select r.region_nm from tb_region r where r.code = m.send_region_no) as send_region_nm
+			, (select r.region_nm from tb_region r where r.code = m.receive_region_no) as receive_region_nm
+			, DATE_FORMAT(m.start_dt, '%Y-%m-%d %T') as start_dt
+			, DATE_FORMAT(m.arrive_dt, '%Y-%m-%d %T') as arrive_dt
+			, DATE_FORMAT(m.shipment_dt, '%Y-%m-%d %T') as shipment_dt
+			,m.transport_way
+			,(select code_nm from sys_codeinfo c where c.code_cd = m.transport_way) as transport_way_nm
+			,m.e_commence_yn
+			,m.charge_target_typ
+			,m.payment_method_typ
+			,m.start_vendor_no
+			,m.transfer_vendor_no
+			,m.arrive_vendor_no
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.start_vendor_no) as start_vendor_nm
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.transfer_vendor_no) as transfer_vendor_nm
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.arrive_vendor_no) as arrive_vendor_nm
+			,m.doc_req_cer_origin_yn
+			,m.doc_req_product_yn
+			,m.doc_req_fta_yn
+			,m.doc_req_su_yn
+			,m.stat_cd
+			,m.receive_dt
+			,m.release_dt
+			,m.reg_id
+			, DATE_FORMAT(m.reg_dt, '%Y-%m-%d') as reg_dt
+			,m.mod_id
+			, DATE_FORMAT(m.mod_dt, '%Y-%m-%d %T') as mod_dt
+			, (select concat(i.item_nm) as item_nm from ord_item i where i.ord_no = m.ord_no group by i.ord_no) as item_nm
+			, (select count(0) from ord_item i where i.ord_no = m.ord_no) as item_cnt
+			, (select sum(qty) from ord_item i where i.ord_no = m.ord_no) as qty
+			, (select sum(amt) from ord_item i where i.ord_no = m.ord_no) as amt
+			, (select sum(tot_amt) from ord_item i where i.ord_no = m.ord_no) as tot_amt
+			, (select sum(box_qty) from ord_item i where i.ord_no = m.ord_no) as box_qty
+			, (select round(sum(kg),1) from ord_item i where i.ord_no = m.ord_no) as kg
+			, (select round(sum(cbm),1) from ord_item i where i.ord_no = m.ord_no) as cbm
+		from ord_mst m
+		inner join ven_vendorinfo v 
+		on m.receive_no = v.vendor_no and v.upvendor_no = #{upvendor_no}
+		and m.ord_typ = '1'
+		order by m.reg_dt desc
+	</select>
+
+	<select id="getSearchDtl" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select m.ord_no
+			,m.ord_typ
+			,case when(m.ord_typ = '1') then '운송접수' when(m.ord_typ = '2') then '보관접수' when(m.ord_typ = '3') then '견적접수'
+			 when(m.ord_typ = '4') then '원산지접수' when(m.ord_typ = '5') then '통관접수' end as ord_typ_nm
+			,m.send_no
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.send_no) as send_nm
+			,m.receive_no
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.receive_no) as receive_nm
+			,m.send_trade_comp_no
+			,m.receive_trade_comp_no
+			,m.send_cc_comp_no
+			,m.receive_cc_comp_no
+			,m.shipping_region_no
+			,m.send_region_no
+			,m.receive_region_no
+			, (select addr from v_region r where r.code = m.shipping_region_no) as shipping_region_nm
+			, (select addr from v_region r where r.code = m.send_region_no limit 1) as send_region_nm
+			, (select addr from v_region r where r.code = m.receive_region_no) as receive_region_nm
+			, DATE_FORMAT(m.start_dt, '%Y-%m-%d %T') as start_dt
+			, DATE_FORMAT(m.arrive_dt, '%Y-%m-%d %T') as arrive_dt
+			, DATE_FORMAT(m.shipment_dt, '%Y-%m-%d %T') as shipment_dt
+			,m.transport_way
+			,(select code_nm from sys_codeinfo c where c.code_cd = m.transport_way) as transport_way_nm
+			,m.e_commence_yn
+			,m.charge_target_typ
+			,m.payment_method_typ
+			,m.start_vendor_no
+			,m.transfer_vendor_no
+			,m.arrive_vendor_no
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.start_vendor_no) as start_vendor_nm
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.transfer_vendor_no) as transfer_vendor_nm
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.arrive_vendor_no) as arrive_vendor_nm
+			,m.doc_req_cer_origin_yn
+			,m.doc_req_product_yn
+			,m.doc_req_fta_yn
+			,m.doc_req_su_yn
+			,m.stat_cd
+			,m.receive_dt
+			,m.release_dt
+			,m.reg_id
+			, DATE_FORMAT(m.reg_dt, '%Y-%m-%d') as reg_dt
+			,m.mod_id
+			, DATE_FORMAT(m.mod_dt, '%Y-%m-%d %T') as mod_dt
+			, (select concat(i.item_nm) as item_nm from ord_item i where i.ord_no = m.ord_no group by i.ord_no) as item_nm
+			, (select count(0) from ord_item i where i.ord_no = m.ord_no) as item_cnt
+			, (select sum(qty) from ord_item i where i.ord_no = m.ord_no) as qty
+			, (select sum(amt) from ord_item i where i.ord_no = m.ord_no) as amt
+			, (select sum(tot_amt) from ord_item i where i.ord_no = m.ord_no) as tot_amt
+			, (select sum(box_qty) from ord_item i where i.ord_no = m.ord_no) as box_qty
+			, (select round(sum(kg),1) from ord_item i where i.ord_no = m.ord_no) as kg
+			, (select round(sum(cbm),1) from ord_item i where i.ord_no = m.ord_no) as cbm
+		from ord_mst m
+		where m.ord_no = #{ord_no}
+
+
+	</select>
+
+	<select id="getPlList"  parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select 
+			m.route_no
+			,m.route_nm
+			,m.trans_typ
+			,m.trans_way
+			,tw.code_nm as trans_way_nm
+			,m.vendor_no
+			,v.vendor_nm
+			,m.ct_size
+			,cs.code_nm as ct_size_nm
+			,m.st_port_no
+			,st.addr as st_port_nm
+			,ar_port_no
+			,ar.addr as ar_port_nm
+			,m.use_yn
+			,m.reg_id
+			,DATE_FORMAT(m.reg_dt, '%Y-%m-%d %T') as reg_dt
+			,m.mod_id
+			,DATE_FORMAT(m.mod_dt, '%Y-%m-%d %T') as mod_dt
+		from route_mst m
+		inner join v_port st on m.st_port_no = st.code
+		inner join v_port ar on m.ar_port_no = ar.code
+		inner join ven_vendorinfo v on m.vendor_no = v.vendor_no
+		inner join sys_codeinfo cs on m.ct_size = cs.code_cd
+		inner join sys_codeinfo tw on m.trans_way = tw.code_cd
+		where m.vendor_no = #{vendor_no}
+		order by m.reg_dt desc
+	</select>
+
+	<select id="getOrdPickup" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select ord_no
+			,pack_cnt
+			,from_dt
+			,to_dt
+			,staff
+			,mobile
+			,tel
+			,addr
+			,memo
+			,delivery_comp
+			,delivery_comp_tel
+			,driver
+			,driver_mobile
+			,car_size
+			,distance
+			,pay_typ
+			,delivery_charge
+			,delivery_purchase
+			,reg_id
+			,reg_dt
+		from ord_pickup
+		where ord_no = #{ord_no}
+		limit 1
+	</select>
+
+
+	<select id="getOrdDelivery" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select ord_no
+			,pack_cnt
+			,from_dt
+			,to_dt
+			,staff
+			,mobile
+			,tel
+			,addr
+			,memo
+			,delivery_comp
+			,delivery_comp_tel
+			,driver
+			,driver_mobile
+			,car_size
+			,distance
+			,pay_typ
+			,delivery_charge
+			,delivery_purchase
+			,reg_id
+			,reg_dt
+		from ord_delivery
+		where ord_no = #{ord_no}
+		limit 1
+	</select>
+
+
+	<insert id="insertOrdChargeDtl" parameterType="java.util.HashMap">
+		insert into ord_charge_dtl (
+			ord_no
+			,charge_vendor_no
+			,charge_typ
+			,charge_nm
+			,unit_cd
+			,amt
+			,reg_id
+			,reg_dt
+		) VALUES (
+			#{ord_no}
+			, #{charge_vendor_no}
+			, #{charge_typ}
+			, #{charge_nm}
+			, #{unit_cd}
+			, #{amt}
+			, #{reg_id}
+			, now()
+		)
+	</insert>
+
+	<insert id="insertOrdChargeMst" parameterType="java.util.HashMap">
+		insert into ord_charge_mst (
+			ord_no
+			,charge_vendor_no
+			,charge_unit
+			,charge_amt
+			,paid_amt
+			,receivable_amt
+			,transport_amt
+			,agency_amt
+			,tax_amt
+			,charge_dt
+			,reg_id
+			,reg_dt
+		) VALUES (
+			#{ord_no}
+			, #{charge_vendor_no}
+			, #{charge_unit}
+			, #{charge_amt}
+			, ifnull(#{paid_amt},0)
+			, #{receivable_amt}
+			, ifnull(#{transport_amt},0)
+			, ifnull(#{agency_amt},0)
+			, ifnull(#{tax_amt},0)
+			, now()
+			, #{reg_id}
+			, now()
+		)
+	</insert>
+
+	<update id="updateOrdChargeDtl" parameterType="java.util.HashMap">
+		update ord_charge_dtl 
+		set charge_vendor_no = #{charge_vendor_no}
+			, charge_typ = #{charge_typ}
+			, charge_nm = #{charge_nm}
+			, unit_cd = #{unit_cd}
+			, amt = #{amt}
+			, mod_id = #{mod_id}
+			, mod_dt = now()
+		where ord_charge_dtl_no = #{ord_charge_dtl_no}
+	</update>
+	
+	<update id="updateOrdChargeMst" parameterType="java.util.HashMap">
+		update ord_charge_mst 
+		set charge_vendor_no = #{charge_vendor_no}
+			, charge_amt = #{charge_amt}
+			, paid_amt = #{paid_amt}
+			, receivable_amt = #{receivable_amt}
+			, transport_amt = #{transport_amt}
+			, agency_amt = #{agency_amt}
+			, tax_amt = #{tax_amt}
+			, mod_id = #{mod_id}
+			, mod_dt = now()
+		where ord_charge_mst_no = #{ord_charge_mst_no}
+	</update>
+	
+	<delete id="deleteOrdChargeDtl" parameterType="java.util.HashMap">
+		delete from ord_charge_dtl where ord_charge_dtl_no = #{ord_charge_dtl_no}
+	</delete>
+	
+	<delete id="deleteOrdChargeMst" parameterType="java.util.HashMap">
+		delete from ord_charge_mst where ord_charge_mst_no = #{ord_charge_mst_no}
+	</delete>
+
+	<insert id="insertOrdPickup" parameterType="java.util.HashMap">
+		insert into ord_pickup(
+			ord_no
+			,pack_cnt
+			,from_dt
+			,to_dt
+			,staff
+			,mobile
+			,tel
+			,addr
+			,memo
+			,delivery_comp
+			,delivery_comp_tel
+			,driver
+			,driver_mobile
+			,car_size
+			,distance
+			,pay_typ
+			,delivery_charge
+			,delivery_purchase
+			,reg_id
+			,reg_dt
+		) VALUES (
+			#{ord_no}
+			,#{pack_cnt}
+			,#{from_dt}
+			,#{to_dt}
+			,#{staff}
+			,#{mobile}
+			,#{tel}
+			,#{addr}
+			,#{memo}
+			,#{delivery_comp}
+			,#{delivery_comp_tel}
+			,#{driver}
+			,#{driver_mobile}
+			,#{car_size}
+			,#{distance}
+			,#{pay_typ}
+			,#{delivery_charge}
+			,#{delivery_purchase}
+			, #{reg_id}
+			, now()
+		)
+	</insert>
+	
+	<insert id="insertOrdDelivery" parameterType="java.util.HashMap">
+		insert into ord_delivery(
+			ord_no
+			,pack_cnt
+			,from_dt
+			,to_dt
+			,staff
+			,mobile
+			,tel
+			,addr
+			,memo
+			,delivery_comp
+			,delivery_comp_tel
+			,driver
+			,driver_mobile
+			,car_size
+			,distance
+			,pay_typ
+			,delivery_charge
+			,delivery_purchase
+			,reg_id
+			,reg_dt
+		) VALUES (
+			#{ord_no}
+			,#{pack_cnt}
+			,#{from_dt}
+			,#{to_dt}
+			,#{staff}
+			,#{mobile}
+			,#{tel}
+			,#{addr}
+			,#{memo}
+			,#{delivery_comp}
+			,#{delivery_comp_tel}
+			,#{driver}
+			,#{driver_mobile}
+			,#{car_size}
+			,#{distance}
+			,#{pay_typ}
+			,#{delivery_charge}
+			,#{delivery_purchase}
+			, #{reg_id}
+			, now()
+		)
+	</insert>
+	
+	<update id="updateOrdPickup" parameterType="java.util.HashMap">
+		update ord_pickup
+		set pack_cnt = #{pack_cnt}
+			,from_dt = #{from_dt}
+			,to_dt = #{to_dt}
+			,staff = #{staff}
+			,mobile = #{mobile}
+			,tel = #{tel}
+			,addr = #{addr}
+			,memo = #{memo}
+			,delivery_comp = #{delivery_comp}
+			,delivery_comp_tel = #{delivery_comp_tel}
+			,driver = #{driver}
+			,driver_mobile = #{driver_mobile}
+			,car_size = #{car_size}
+			,distance = #{distance}
+			,pay_typ = #{pay_typ}
+			,delivery_charge = #{delivery_charge}
+			,delivery_purchase = #{delivery_purchase}
+			, mod_id = #{mod_id}
+			, mod_dt = now()
+		where ord_no = #{ord_no}
+		and ord_pick_no = #{ord_pick_no}
+	</update>
+	
+	<update id="updateOrdDelivery" parameterType="java.util.HashMap">
+		update ord_delivery
+		set pack_cnt = #{pack_cnt}
+			,from_dt = #{from_dt}
+			,to_dt = #{to_dt}
+			,staff = #{staff}
+			,mobile = #{mobile}
+			,tel = #{tel}
+			,addr = #{addr}
+			,memo = #{memo}
+			,delivery_comp = #{delivery_comp}
+			,delivery_comp_tel = #{delivery_comp_tel}
+			,driver = #{driver}
+			,driver_mobile = #{driver_mobile}
+			,car_size = #{car_size}
+			,distance = #{distance}
+			,pay_typ = #{pay_typ}
+			,delivery_charge = #{delivery_charge}
+			,delivery_purchase = #{delivery_purchase}
+			, mod_id = #{mod_id}
+			, mod_dt = now()
+		where ord_no = #{ord_no}
+		and ord_delivery_no = #{ord_delivery_no}
+	</update>
+	
+	
+
+</mapper>

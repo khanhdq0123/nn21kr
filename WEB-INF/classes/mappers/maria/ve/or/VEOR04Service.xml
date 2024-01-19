@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="VEOR04Service">
+ 
+	<select id="getTransportList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select tp_no
+			,transport_way
+			,transport_way_nm
+			,tp_ct_cnt
+			,tp_ord_cnt			
+			,air_nm
+			,air_flight_no
+			,car_comp_nm
+			,car_driver
+			,car_driver_tel
+			,car_no
+			,car_size
+			,ship_comp_nm
+			,ship_vessel_nm
+			,ship_shipping
+			,sub_comp_nm
+			,sub_from_tel
+			,sub_to_tel
+			,comp_nm					
+			,wh_nm			
+			,master_bl
+			,vendor_no
+			,vendor_nm
+			,start_vendor_no
+			,start_vendor_nm
+			,arrive_vendor_no
+			,arrive_vendor_nm
+			,send_region_no
+			,send_region_nm
+			,receive_region_no
+			,receive_region_nm
+			,concat(DATE_FORMAT(start_dt, '%m%d'),' - ',DATE_FORMAT(arrive_dt, '%m%d')) as from_to_date
+			,concat(send_region_nm,' ~ ',receive_region_nm) as from_to_region
+			,tp_st_cd
+			,tp_st_nm
+			,ct_size
+			,ct_size_nm
+			,ct_num
+			,ifnull(item_info,'') as item_info
+			,reg_id
+			,reg_dt
+			,mod_id
+			,mod_dt	
+			from (
+				select t.tp_no
+					,t.transport_way
+					, (select a.code_nm from sys_codeinfo a where a.code_cd = t.transport_way) as transport_way_nm
+					, (select count(0) from transport_ct where tp_no = t.tp_no) as tp_ct_cnt
+					, (select count(0) from transport_ord where tp_no = t.tp_no) as tp_ord_cnt			
+					,t.air_nm
+					,t.air_flight_no
+					,t.car_comp_nm
+					,t.car_driver
+					,t.car_driver_tel
+					,t.car_no
+					,t.car_size
+					,t.ship_comp_nm
+					,t.ship_vessel_nm
+					,t.ship_shipping
+					,t.sub_comp_nm
+					,t.sub_from_tel
+					,t.sub_to_tel
+					, case t.transport_way when '10201' then t.car_comp_nm
+						when '10202' then  t.ship_comp_nm
+						when '10203' then t.air_nm
+						when '10205' then t.sub_comp_nm end as comp_nm					
+					, (select max(v.vendor_nm)
+						from transport_ct c
+						inner join container_mst cm on cm.ct_no = c.ct_no
+						inner join ord_wh w on w.wh_no = cm.wh_no
+						inner join ven_vendorinfo v on v.vendor_no = w.wh_no
+						where c.tp_no = t.tp_no
+					) as wh_nm			
+					,t.master_bl
+					,t.vendor_no
+					, (select vendor_nm from ven_vendorinfo v where v.vendor_no = t.vendor_no) as vendor_nm
+					,t.start_vendor_no
+					, (select vendor_nm from ven_vendorinfo v1 where v1.vendor_no = t.start_vendor_no) as start_vendor_nm
+					,t.arrive_vendor_no
+					, (select vendor_nm from ven_vendorinfo v2 where v2.vendor_no = t.arrive_vendor_no) as arrive_vendor_nm
+					,t.send_region_no
+					, (select region_nm from tb_region r1 where r1.code = t.send_region_no) as send_region_nm
+					,t.receive_region_no
+					, (select region_nm from tb_region r2 where r2.code = t.receive_region_no) as receive_region_nm
+					
+					, concat(DATE_FORMAT(t.start_dt, '%m%d'),' - ',DATE_FORMAT(t.arrive_dt, '%m%d')) as from_to_date
+		
+		
+					, (
+						select concat(count(0),' : ',sum(co.box_cnt),'CT ' , format(sum(ow.weight),0),'Kg ',sum(ow.cbm),'CBM')
+						from container_ord co 
+						inner join ord_wh ow on co.wh_no = ow.wh_no and co.ord_no = ow.ord_no 
+						where co.ct_no = cm.ct_no
+					) as item_info
+		
+					,DATE_FORMAT(t.start_dt, '%Y-%m-%d') as start_dt
+					,DATE_FORMAT(t.start_dt, '%H') as start_dt_hh
+					,DATE_FORMAT(t.start_dt, '%i') as start_dt_mi
+					,DATE_FORMAT(t.arrive_dt, '%Y-%m-%d') as arrive_dt
+					,DATE_FORMAT(t.arrive_dt, '%H') as arrive_dt_hh
+					,DATE_FORMAT(t.arrive_dt, '%i') as arrive_dt_mi
+					,t.tp_st_cd
+					,sc1.code_nm as tp_st_nm
+					, cm.ct_size
+					, cm.ct_num
+					, (select a.code_nm from sys_codeinfo a where a.code_cd = cm.ct_size) as ct_size_nm
+					,t.reg_id
+					,DATE_FORMAT(t.reg_dt, '%Y-%m-%d') as reg_dt
+					,t.mod_id
+					,DATE_FORMAT(t.mod_dt, '%Y-%m-%d') as mod_dt
+				from transport_mst t
+				inner join sys_codeinfo sc1 on t.tp_st_cd = sc1.code_cd
+				inner join transport_ct tc on t.tp_no = tc.tp_no
+				inner join container_mst cm on tc.ct_no = cm.ct_no
+		) as s
+		where s.start_vendor_no = #{vendor_no}
+		<if test='transport_way != null and transport_way != ""'>
+		and s.transport_way = #{transport_way}
+		</if>
+		<if test='tp_no != null and tp_no != ""'>
+		and s.tp_no = #{tp_no}
+		</if>
+		<if test='tp_st_cd != null and tp_st_cd != ""'>
+		and s.tp_st_cd = #{tp_st_cd}
+		</if>
+	</select>
+
+	<select id="getSearchDtl" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+
+
+
+	</select>
+
+	<insert id="insert" parameterType="java.util.HashMap">
+		insert into pl_mst (
+			route_no
+			,pl_nm
+			,unit_cd
+			,exw
+			,ddp
+			,cnf
+			,fob
+			,amt
+			,reg_id
+			,reg_dt
+		) VALUES (
+			#{route_no}
+			, #{pl_nm}
+			, #{unit_cd}
+			, #{exw}
+			, #{ddp}
+			, #{cnf}
+			, #{fob}
+			, #{amt}
+			, #{reg_id}
+			, now()
+		)
+	</insert>
+
+	<update id="update" parameterType="java.util.HashMap">
+		update pl_mst 
+		set pl_nm = #{pl_nm}
+			, unit_cd = #{unit_cd}
+			, exw = #{exw}
+			, ddp = #{ddp}
+			, cnf = #{cnf}
+			, fob = #{fob}
+			, amt = #{amt}
+			, mod_id = #{mod_id}
+			, mod_dt = now()
+		where pl_no = #{pl_no}
+	</update>
+	
+	<delete id="delete" parameterType="java.util.HashMap">
+		delete from pl_mst where pl_no = #{pl_no}
+	</delete>
+
+</mapper>

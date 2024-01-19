@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.SystemCodeDAO">
+ 
+<select id="selectSystemCodeList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select * 
+	from sys_codeinfo 
+	where upcode_cd = '00000'
+	<if test='code_cd !=null and code_cd != ""'>
+	and code_cd = #{code_cd}
+	</if>
+	<if test='use_yn !=null and use_yn != ""'>
+	and use_yn = #{use_yn}
+	</if>
+</select>
+
+<select id="selectSystemLowCodeList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select *
+	from sys_codeinfo
+	where upcode_cd = #{code_id}
+	<if test='use_yn !=null and use_yn != ""'>
+	and use_yn = #{use_yn}
+	</if>
+</select>
+
+<select id="selectSystemLowCodeList2" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select *
+	from sys_codeinfo
+	where inside_txt = #{code_id}
+	<if test='use_yn !=null and use_yn != ""'>
+	and use_yn = #{use_yn}
+	</if>
+</select>
+
+<select id="getUpCodeCd" resultType="String">
+select case when count(0) = 0 then '10000' 
+		else max(code_cd) + 100
+		end as code_cd
+from sys_codeinfo
+where upcode_cd = '00000'
+</select>
+
+<select id="getCodeCd" parameterType="String" resultType="String">
+select case when count(0) = 0 then #{upcode_cd} + 1 
+		else max(code_cd) + 1
+		end as code_cd
+from sys_codeinfo
+where upcode_cd = #{upcode_cd}
+</select>
+
+<update id="updateSystemCodeList" parameterType="java.util.HashMap">
+	update sys_codeinfo set code_nm = #{code_nm}
+		,use_yn = #{use_yn}
+		,sort_seq = #{sort_seq}
+		,inside_txt = #{inside_txt}
+		,comment_txt = #{comment_txt}
+		,tmpfield1_txt = #{tmpfield1_txt}
+		,tmpfield2_txt = #{tmpfield2_txt}
+		,modstaff_id = #{modstaff_id}
+	where code_cd = #{code_cd}
+</update>
+ 
+<select id="selectSystemCodeDetail" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+select code_cd
+	, upcode_cd
+	,code_nm
+	,sort_seq
+	,syscode_yn
+	,tmpfield1_txt
+	,tmpfield2_txt
+	,tmpfield3_txt
+	,inside_txt
+	,comment_txt
+	,use_yn
+	,regstaff_id
+	,reg_dt
+	,modstaff_id
+	,mod_dt
+from sys_codeinfo 
+where code_cd = #{code_cd}
+</select>
+
+<insert id="insertSystemCodeDetail" parameterType="java.util.HashMap" >
+	insert into sys_codeinfo(code_cd
+		,upcode_cd
+		,code_nm
+		,sort_seq
+		,syscode_yn
+		,tmpfield1_txt
+		,tmpfield2_txt
+		,tmpfield3_txt
+		,inside_txt
+		,comment_txt
+		,use_yn
+		,regstaff_id
+		,reg_dt
+		,modstaff_id
+		,mod_dt
+	) values (#{code_cd}
+		,#{upcode_cd}
+		,#{code_nm}
+		,#{sort_seq}
+		,#{syscode_yn}
+		,#{tmpfield1_txt}
+		,#{tmpfield2_txt}
+		,#{tmpfield3_txt}
+		,#{inside_txt}
+		,#{comment_txt}
+		,#{use_yn}
+		,#{regstaff_id}
+		, now()
+		,#{modstaff_id}
+		, now()
+	)
+</insert>
+
+
+
+</mapper>

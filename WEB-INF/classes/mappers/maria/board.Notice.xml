@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="board.NoticeDAO">
+
+ 
+<!-- 메인화면 -->
+<select id="selectMainNoticeList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	SELECT ntc.noticebbs_no, ntc.notice_typ, ntc.title_txt, ntc.content_txt, ntc.disp_seq, 
+		ntc.start_dt, 
+		ntc.end_dt, 
+		ntc.imp_yn, ntc.pop_yn, ntc.noti_area_typ, ntc.use_yn, ntc.del_yn, 
+		ntc.regstaff_id, ntc.reg_dt, 
+		ntc.modstaff_id, ntc.mod_dt,
+		attch.att_seq, attch.filename_txt, attch.attachfile_txt,
+		ven.vendor_no, veninfo.vendor_nm
+	FROM bod_admin_notice ntc
+	LEFT JOIN bod_attachment attch  ON ntc.noticebbs_no = attch.noticebbs_no
+	LEFT JOIN bod_admin_notice_ven ven ON ntc.noticebbs_no = ven.noticebbs_no
+	LEFT JOIN ven_vendorinfo veninfo ON ven.vendor_no = veninfo.vendor_no
+	WHERE ven.vendor_no = #{vendor_no}
+</select>
+<select id="selectMainNoticeDetail" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	SELECT ntc.noticebbs_no, ntc.notice_typ, ntc.title_txt, ntc.content_txt, ntc.disp_seq, 
+		ntc.start_dt, 
+		ntc.end_dt, 
+		ntc.imp_yn, ntc.pop_yn, ntc.noti_area_typ, ntc.use_yn, ntc.del_yn, 
+		ntc.regstaff_id, ntc.reg_dt, 
+		ntc.modstaff_id, ntc.mod_dt,
+		attch.att_seq, attch.filename_txt, attch.attachfile_txt,
+		ven.vendor_no, veninfo.vendor_nm
+	FROM bod_admin_notice ntc
+	LEFT JOIN bod_attachment attch  ON ntc.noticebbs_no = attch.noticebbs_no
+	LEFT JOIN bod_admin_notice_ven ven ON ntc.noticebbs_no = ven.noticebbs_no
+	LEFT JOIN ven_vendorinfo veninfo ON ven.vendor_no = veninfo.vendor_no
+	WHERE ntc.noticebbs_no = #{noticebbs_no}
+</select>
+<select id="selectMainNoticePopList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	SELECT ntc.noticebbs_no, ntc.notice_typ, ntc.title_txt, ntc.content_txt, ntc.disp_seq, 
+		ntc.start_dt, 
+		ntc.end_dt, 
+		ntc.imp_yn, ntc.pop_yn, ntc.noti_area_typ, ntc.use_yn, ntc.del_yn, 
+		ntc.regstaff_id, ntc.reg_dt, 
+		ntc.modstaff_id, ntc.mod_dt,
+		attch.att_seq, attch.filename_txt, attch.attachfile_txt,
+		ven.vendor_no, veninfo.vendor_nm
+	FROM bod_admin_notice ntc
+	LEFT JOIN bod_attachment attch  ON ntc.noticebbs_no = attch.noticebbs_no
+	LEFT JOIN bod_admin_notice_ven ven ON ntc.noticebbs_no = ven.noticebbs_no
+	LEFT JOIN ven_vendorinfo veninfo ON ven.vendor_no = veninfo.vendor_no
+	WHERE ven.vendor_no = #{vendor_no}
+</select>
+<!-- 메인화면 end -->
+ 
+<!-- 관리자 공지 -->
+<insert id="insertAdminNotice" parameterType="java.util.HashMap">
+	INSERT INTO bod_admin_notice (
+		notice_typ, title_txt, content_txt, disp_seq, 
+		start_dt, end_dt, view_cnt, imp_yn, pop_yn, noti_area_typ, 
+		use_yn, del_yn, regstaff_id, reg_dt, modstaff_id, mod_dt
+	) VALUES (
+		#{notice_typ}, #{title_txt}, #{content_txt}, #{disp_seq},
+		CONVERT(#{start_dt}, DATETIME), CONVERT(#{end_dt}, DATETIME),
+		#{view_cnt}, #{imp_yn}, #{pop_yn}, #{noti_area_typ}, #{use_yn}, #{del_yn},
+		#{regstaff_id}, NOW(3), #{regstaff_id}, NOW(3)
+	)
+</insert>
+
+	
+<insert id="insertAdminNoticeAttach" parameterType="java.util.HashMap">
+	INSERT 
+	INTO bod_attachment (
+		noticebbs_no, att_seq, filename_txt, 
+		attachfile_txt, regstaff_id, reg_dt, 
+		modstaff_id, mod_dt, download_cnt
+	)
+	VALUES (
+		#{noticebbs_no}
+		, 1
+		, #{filename_txt}
+		, #{attachfile_txt}
+		, #{reg_id} 
+		, NOW(3)
+		, #{reg_id}
+		, NOW(3),
+		0
+	)
+</insert>
+
+<select id="selectAdminNoticeList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+SELECt t.rnum
+	, t.notice_typ
+	, t.noticebbs_no
+	, t.title_txt
+	, t.regstaff_id
+	, t.reg_dt
+	, UPPER(t.use_yn) AS use_yn
+	, UPPER(t.pop_yn) AS pop_yn
+	, UPPER(t.imp_yn) AS imp_yn
+	, t.view_cnt
+	, t.download_cnt
+	, t.disp_seq
+FROM (
+	SELECT  @rownum:=@rownum+1 AS rnum
+		, ntc.notice_typ
+		, ntc.noticebbs_no
+		, ntc.title_txt
+		, ntc.regstaff_id
+		, ntc.reg_dt
+		, ntc.use_yn
+		, ntc.pop_yn
+		, ntc.imp_yn
+		, ntc.view_cnt
+		, attch.download_cnt
+		, ntc.disp_seq
+	FROM bod_admin_notice ntc
+	LEFT JOIN bod_attachment attch ON ntc.noticebbs_no = attch.noticebbs_no
+   , (select @rownum:=0) as r
+   WHERE ntc.del_yn = 'n'
+) t
+
+</select>
+
+<select id="selectAdminNoticeDetail" parameterType="java.util.HashMap" resultMap="adminNoticeRows">
+SELECT ntc.noticebbs_no, ntc.notice_typ, ntc.title_txt, ntc.content_txt, ntc.disp_seq, 
+	ntc.start_dt, 
+	ntc.end_dt, 
+	ntc.imp_yn, ntc.pop_yn, ntc.noti_area_typ, ntc.use_yn, ntc.del_yn, 
+	ntc.regstaff_id, ntc.reg_dt, 
+	ntc.modstaff_id, ntc.mod_dt,
+	attch.att_seq, attch.filename_txt, attch.attachfile_txt,
+	ven.vendor_no, veninfo.vendor_nm
+FROM bod_admin_notice ntc
+LEFT JOIN bod_attachment attch  ON ntc.noticebbs_no = attch.noticebbs_no
+LEFT JOIN bod_admin_notice_ven ven ON ntc.noticebbs_no = ven.noticebbs_no
+LEFT JOIN ven_vendorinfo veninfo ON ven.vendor_no = veninfo.vendor_no
+WHERE ntc.noticebbs_no = #{noticebbs_no}
+</select>
+
+<resultMap id="adminNoticeRows" type="java.util.HashMap">
+	<id property="noticebbs_no" column="noticebbs_no"/>  
+	<result property="notice_typ" column="notice_typ"/>
+	<result property="title_txt" column="title_txt"/>
+	<result property="content_txt" column="content_txt"/>
+	<result property="disp_seq" column="disp_seq"/>
+	<result property="start_dt" column="start_dt"/>
+	<result property="end_dt" column="end_dt"/>
+	<result property="view_cnt" column="view_cnt"/>
+	<result property="imp_yn" column="imp_yn"/>
+	<result property="pop_yn" column="pop_yn"/>
+	<result property="noti_area_typ" column="noti_area_typ"/>
+	<result property="use_yn" column="use_yn"/>
+	<result property="del_yn" column="del_yn"/>
+	<result property="regstaff_id" column="regstaff_id"/>
+	<result property="reg_dt" column="reg_dt"/>
+	<result property="modstaff_id" column="modstaff_id"/>
+	<result property="mod_dt" column="mod_dt"/>
+	<result property="att_seq" column="att_seq"/>
+	<result property="filename_txt" column="filename_txt"/>
+	<result property="attachfile_txt" column="attachfile_txt"/>
+	<collection property="vendorList" javaType="java.util.ArrayList" resultMap="adminNoticeChildRows_vendor"/>
+</resultMap>
+
+<resultMap id="adminNoticeChildRows_vendor" type="java.util.HashMap">
+    <id property="vendor_no" column="vendor_no"/>
+    <result property="vendor_nm" column="vendor_nm"/>
+</resultMap>
+
+</mapper>

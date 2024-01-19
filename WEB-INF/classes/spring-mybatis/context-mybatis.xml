@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:p="http://www.springframework.org/schema/p" 
+		xmlns:context="http://www.springframework.org/schema/context"
+		xsi:schemaLocation="http://www.springframework.org/schema/beans 
+			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+			http://www.springframework.org/schema/context 
+			http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+	
+	<bean id="sqlSessionFactory_maria" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource"  ref="dataSource_maria" />		
+		<property name="configLocation" value="classpath:spring-mybatis/mybatis-config.xml" />
+		<!-- 매퍼의 위치가 1곳일 경우 사용 -->
+<!-- 		<property name="mapperLocations" value="classpath*:mappers/maria/*.xml" /> -->
+		<!-- 매퍼의 위치가 폴더별로 하층구분을 한다면 아래의 설정을 사용 -->
+		<property name="mapperLocations" value="classpath*:mappers/maria/**/*.xml" />
+
+	</bean>
+
+
+	<bean id="sqlSession_maria" class="org.mybatis.spring.SqlSessionTemplate" destroy-method="clearCache">
+  		<constructor-arg index="0" ref="sqlSessionFactory_maria" />
+	</bean>	
+
+</beans>	

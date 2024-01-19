@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="member.LoginDAO">
+
+<select id="selectStaffInfo" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select s.staff_id
+		,s.groupauth_id
+		,s.vendor_no
+		,s.login_id
+		,s.staff_typ
+		,s.passwd_txt
+		,s.staff_nm
+		,s.staff_enm
+		,s.nick_nm
+		,s.job_cd
+		,s.position_cd
+		,s.tel_txt
+		,s.mobile_txt
+		,s.email_txt
+		,s.del_yn
+		,s.login_fail_cnt
+		,s.use_yn
+		,s.authentication_yn
+		,s.enc_authentication_no
+		,v.upvendor_no
+		,v.upvendor_nm
+		,v.vendor_cd
+		,v.vendor_nm
+		,v.vendor_nm_eng
+		,v.vendor_typ
+		,v.business_type_txt
+		,v.business_txt
+		,v.tel_txt
+		,v.fax_txt
+		,v.email_txt
+		,v.homepage_url
+		,v.item_txt
+		,v.road_basadd_txt
+		,v.road_dtladd_txt
+		,v.stats_typ_cd
+	from sys_staffinfo s
+	inner join ven_vendorinfo v on v.vendor_no = s.vendor_no
+	where login_id = #{login_id}
+</select>
+
+<select id="selectLoginDt" parameterType="String" resultType="String">
+        SELECT login_cnt + 1 AS login_cnt
+    	FROM dbo.sys_staffinfo with(updlock)
+    	WHERE staff_id = #{staff_id}      
+</select>
+  
+<update id="updateLoginDt"  parameterType="java.util.HashMap">
+    UPDATE dbo.sys_staffinfo
+    SET	lastlogin_dt = GETDATE(), login_cnt = #{login_cnt}, login_fail_cnt = 0
+    WHERE staff_id = #{staff_id}
+</update>  
+
+<update id="updateStaffAuthenticationNo" parameterType="java.util.HashMap">
+	update sys_staffinfo set enc_authentication_no = #{enc_authentication_no} where login_id = #{login_id}
+</update>
+
+
+</mapper>

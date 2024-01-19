@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ADMN01Service">
+ 
+<insert id="getManualSeq" parameterType="com.nn21.dto.SequenceDto">
+	insert into sq_manual_mst(manual_no) values(0)
+	<selectKey keyProperty="manual_no" resultType="int" >select last_insert_id()</selectKey>
+</insert>
+
+<insert id="insertManualMst" parameterType="java.util.HashMap">
+	INSERT INTO manual_mst (
+		manual_no
+		,manual_typ
+		,vendor_no
+		,title_txt
+		,content_txt
+		,reg_id
+		,reg_dt
+	) VALUES (
+		#{manual_no}
+		,#{manual_typ}
+		,#{vendor_no}
+		,#{title_txt}
+		,#{content_txt}
+		,#{reg_id}
+		,NOW()
+	)
+</insert>
+
+<insert id="insertManualAttach" parameterType="java.util.HashMap">
+	INSERT INTO manual_attach (
+		manual_no
+		,filename_txt
+		,attachfile_txt
+		,reg_id
+		,reg_dt
+	) VALUES (
+		#{manual_no}
+		,#{filename_txt}
+		,#{attachfile_txt}
+		,#{reg_id}
+		,NOW()
+	)
+</insert>
+
+<update id="updateManualMst" parameterType="java.util.HashMap">
+	update manual_mst set mod_id = #{mod_id}, mod_dt = now()
+		<if test='manual_typ != null and manual_typ != ""'>
+		,manual_typ = #{manual_typ}
+		</if>
+		<if test='title_txt != null and title_txt != ""'>
+		,title_txt = #{title_txt}
+		</if>
+		<if test='content_txt != null and content_txt != ""'>
+		,content_txt = #{content_txt}
+		</if>
+		<if test='del_yn != null and del_yn != ""'>
+		,del_yn = #{del_yn}
+		</if>
+	where manual_no = #{manual_no}
+</update>
+
+<delete id="deleteManualMst" parameterType="java.util.HashMap">
+	delete from manual_mst where manual_no = #{manual_no}
+</delete>
+
+<delete id="deleteManualAttach" parameterType="java.util.HashMap">
+	delete from manual_attach 
+	where 1=1
+	and manual_no = #{manual_no}
+	<if test='att_seq != null and att_seq != ""'>
+	and att_seq = #{att_seq}
+	</if>
+</delete>
+
+<select id="selectManualList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select nm.manual_no
+		,nm.manual_typ
+		,nm.title_txt
+		,nm.del_yn
+		,ss.staff_nm
+		,ss.staff_id
+		,vv.vendor_no
+		,vv.vendor_cd
+		,vv.vendor_nm
+		,nm.reg_id
+		,DATE_FORMAT(nm.reg_dt, '%Y-%m-%d %T') as reg_dt
+		,nm.mod_id
+		,DATE_FORMAT(nm.mod_dt, '%Y-%m-%d %T') as mod_dt
+	from manual_mst nm
+	inner join sys_staffinfo ss on nm.reg_id = ss.staff_id
+	inner join ven_vendorinfo vv on nm.vendor_no = vv.vendor_no
+	where nm.vendor_no = #{vendor_no}
+	<if test='title_txt !=null and title_txt != ""'>
+	and nm.title_txt like CONCAT('%',#{title_txt},'%')
+	</if>
+	order by nm.reg_dt desc
+</select>
+
+<select id="selectManualDetail" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select dm.manual_no
+		,dm.manual_typ
+		,dm.title_txt
+		,CAST( dm.content_txt AS CHAR (10000) CHARACTER SET UTF8) AS content_txt
+		,dm.del_yn
+		,dm.reg_id
+		,DATE_FORMAT(dm.reg_dt, '%Y-%m-%d %T') as reg_dt
+		,dm.mod_id
+		,DATE_FORMAT(dm.mod_dt, '%Y-%m-%d %T') as mod_dt
+	from manual_mst dm
+	where dm.manual_no = #{manual_no}
+</select>
+
+<select id="selectManualAttachList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+select da.manual_no
+		,da.att_seq
+		,CAST( da.filename_txt AS CHAR (10000) CHARACTER SET UTF8) AS filename_txt
+		,da.attachfile_txt
+from manual_attach da
+where da.manual_no = #{manual_no}
+</select>
+
+<select id="getManualAttach" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+select da.manual_no
+		,da.att_seq
+		,CAST( da.filename_txt AS CHAR (10000) CHARACTER SET UTF8) AS filename_txt
+		,da.attachfile_txt
+from manual_attach da
+where da.manual_no = #{manual_no}
+and da.att_seq = #{att_seq}
+</select>
+
+
+</mapper>

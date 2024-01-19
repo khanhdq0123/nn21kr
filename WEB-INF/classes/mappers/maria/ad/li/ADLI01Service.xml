@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ADLI01Service">
+ 
+ 
+	<select id="getSearch"  parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select 
+			m.route_no
+			,m.route_nm
+			,m.trans_typ
+			,m.trans_way
+			,tw.code_nm as trans_way_nm
+			,m.vendor_no
+			,v.vendor_nm
+			,v.vendor_cd
+			,m.ct_size
+			,cs.code_nm as ct_size_nm
+			,m.st_port_no
+			,st.addr as st_port_nm
+			,ar_port_no
+			,ar.addr as ar_port_nm
+			,m.use_yn
+			,sc.code_nm as st_nm
+			,m.reg_id
+			,DATE_FORMAT(m.reg_dt, '%Y-%m-%d %T') as reg_dt
+			,m.mod_id
+			,DATE_FORMAT(m.mod_dt, '%Y-%m-%d %T') as mod_dt
+		from route_mst m
+		inner join v_port st on m.st_port_no = st.code
+		inner join v_port ar on m.ar_port_no = ar.code
+		inner join ven_vendorinfo v on m.vendor_no = v.vendor_no
+		inner join sys_codeinfo cs on m.ct_size = cs.code_cd
+		inner join sys_codeinfo tw on m.trans_way = tw.code_cd
+		inner join sys_codeinfo sc on m.st_cd = sc.code_cd
+		where 1=1
+		<if test='trans_typ !=null and trans_typ != ""'>
+		and m.trans_typ = #{trans_typ}
+		</if>
+		<if test='trans_way !=null and trans_way != ""'>
+		and m.trans_way = #{trans_way}
+		</if>
+		<if test='st_cd !=null and st_cd != ""'>
+		and m.st_cd = #{st_cd}
+		</if>
+		order by m.reg_dt desc
+	</select>
+	
+	<select id="selectRouteInfo"  parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select 
+			m.route_no
+			,m.route_nm
+			,m.trans_typ
+			,m.trans_way
+			,tw.code_nm as trans_way_nm
+			,m.vendor_no
+			,v.vendor_nm
+			,v.vendor_cd
+			,m.ct_size
+			,cs.code_nm as ct_size_nm
+			,m.st_port_no
+			,st.addr as st_port_nm
+			,ar_port_no
+			,ar.addr as ar_port_nm
+			,m.use_yn
+			,sc.code_nm as st_nm
+			,m.reg_id
+			,DATE_FORMAT(m.reg_dt, '%Y-%m-%d %T') as reg_dt
+			,m.mod_id
+			,DATE_FORMAT(m.mod_dt, '%Y-%m-%d %T') as mod_dt
+		from route_mst m
+		inner join v_port st on m.st_port_no = st.code
+		inner join v_port ar on m.ar_port_no = ar.code
+		inner join ven_vendorinfo v on m.vendor_no = v.vendor_no
+		inner join sys_codeinfo cs on m.ct_size = cs.code_cd
+		inner join sys_codeinfo tw on m.trans_way = tw.code_cd
+		inner join sys_codeinfo sc on m.st_cd = sc.code_cd
+		where route_no = #{route_no}
+	</select>
+	
+	<insert id="insertRoute" parameterType="java.util.HashMap" >
+		insert into route_mst (
+			route_nm
+			,trans_typ
+			,trans_way
+			,vendor_no
+			,ct_size
+			,st_port_no
+			,ar_port_no
+			,use_yn
+			,st_cd
+			,reg_id
+			,reg_dt
+		) values (
+			#{route_nm}
+			,#{trans_typ}
+			,#{trans_way}
+			,#{vendor_no}
+			,#{ct_size}
+			,#{st_port_no}
+			,#{ar_port_no}
+			,#{use_yn}		
+			,#{st_cd}	
+			,#{reg_id}
+			,now()
+		)
+	</insert>
+	
+	<update id="updateRoute" parameterType="java.util.HashMap" >
+		update route_mst set
+			route_nm = #{route_nm}
+			,trans_typ = #{trans_typ}
+			,trans_way = #{trans_way}
+			,vendor_no = #{vendor_no}
+			,ct_size = #{ct_size}
+			,st_port_no = #{st_port_no}
+			,ar_port_no = #{ar_port_no}
+			,use_yn = #{use_yn}
+			,mod_id = #{mod_id}
+			,mod_dt = now()
+		where route_no = #{route_no}
+	</update>
+	
+	<update id="updateRouteStCd" parameterType="java.util.HashMap" >
+		update route_mst set
+			st_cd = #{st_cd}
+			,mod_id = #{mod_id}
+			,mod_dt = now()
+		where route_no = #{route_no}
+	</update>
+	
+	<delete id="deleteRoute" parameterType="java.util.HashMap">
+		delete from route_mst 
+		where route_no = #{route_no}
+	</delete> 
+ 
+
+
+	<select id="getVendorList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+
+			SELECT v.vendor_no
+				,v.vendor_cd
+				,v.vendor_nm
+				,v.vendor_nm_eng
+				,v.vendor_typ
+				,v.ceo_nm
+				,v.biz_num_txt
+				,v.tax_cd
+				,v.business_type_txt
+				,v.business_txt
+				,v.tel_txt
+				,v.fax_txt
+				,v.email_txt
+				,v.homepage_url
+				,v.item_txt
+				,v.charge_name_nm
+				,v.charge_tel_txt
+				,v.charge_mobil_txt
+				,v.charge_email_txt
+				,v.zipnum_cd
+				,v.basadd_txt
+				,v.dtladd_txt
+				,v.road_basadd_txt
+				,v.road_dtladd_txt
+				,v.stats_typ_cd
+				, v.reg_id
+				, DATE_FORMAT(v.reg_dt, '%Y-%m-%d %T') as reg_dt
+				, v.mod_id
+				, DATE_FORMAT(v.mod_dt, '%Y-%m-%d %T') as mod_dt
+			FROM ven_vendorinfo v
+			WHERE 1=1
+			and v.vendor_typ = '2'
+			order by v.vendor_nm			
+	</select>
+
+
+
+
+
+	
+	<select id="getSearchDtl" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select e.exch_no
+			, e.exch_cd
+			, e.inp_dt
+			, e.type
+			, e.foreign_cost
+			, e.local_curr_exh_cost
+			, e.start_dt
+			, e.end_dt
+		from exchange_rate e
+		where e.exch_no = #{exch_no}
+	</select>
+
+	<insert id="insert" parameterType="java.util.HashMap">
+		insert into exchange_rate (
+			exch_cd
+			, inp_dt
+			, type
+			, foreign_cost
+			, local_curr_exh_cost
+			, start_dt
+			, end_dt
+		) VALUES (
+			#{exch_cd}
+			, #{inp_dt}
+			, #{type}
+			, #{foreign_cost}
+			, #{local_curr_exh_cost}
+			, #{start_dt}
+			, #{end_dt}
+		)
+	</insert>
+
+	<update id="update" parameterType="java.util.HashMap">
+		update exchange_rate 
+		set exch_cd = #{exch_cd}
+			, inp_dt = #{inp_dt}
+			, type = #{type}
+			, foreign_cost = #{foreign_cost}
+			, local_curr_exh_cost = #{local_curr_exh_cost}
+			, start_dt = #{start_dt}
+			, end_dt = #{end_dt}
+		where exch_no = #{exch_no}
+	</update>
+	
+	<delete id="delete" parameterType="java.util.HashMap">
+		delete from exchange_rate where exch_no = #{exch_no}
+	</delete>
+
+</mapper>

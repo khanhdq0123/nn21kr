@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="PartnerService">
+ 
+	<select id="selectSubCompList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+			SELECT v.vendor_no
+				, ifnull(v.vendor_cd,'') as vendor_cd
+				,v.vendor_nm
+				, v.upvendor_no
+				, v.upvendor_nm
+				,v.vendor_nm_eng
+				,v.vendor_typ
+				,case when v.vendor_typ = '2' then '고객사' when v.vendor_typ = '3' then '고객사' when v.vendor_typ = '4' then '관세사' when v.vendor_typ = '5' then '창고' when v.vendor_typ = '6' then '운송사' end as vendor_typ_nm
+				,v.ceo_nm
+				,v.biz_num_txt
+				,v.tax_cd
+				,v.business_type_txt
+				,v.business_txt
+				,v.tel_txt
+				,v.fax_txt
+				,v.email_txt
+				,v.homepage_url
+				,v.item_txt
+				,v.charge_name_nm
+				,v.charge_tel_txt
+				,v.charge_mobil_txt
+				,v.charge_email_txt
+				,v.zipnum_cd
+				,v.basadd_txt
+				,v.dtladd_txt
+				,v.road_basadd_txt
+				,v.road_dtladd_txt
+				,v.stats_typ_cd
+				, v.reg_id
+				, DATE_FORMAT(v.reg_dt, '%Y-%m-%d %T') as reg_dt
+				, v.mod_id
+				, DATE_FORMAT(v.mod_dt, '%Y-%m-%d %T') as mod_dt
+			FROM ven_vendorinfo v
+			WHERE 1=1
+			and v.upvendor_no = #{vendor_no}
+			<if test='vendor_typ != null and vendor_typ != ""'>
+			and v.vendor_typ = #{vendor_typ}
+			</if>
+			<if test='vendor_nm != null and vendor_nm != ""'>
+			and (v.vendor_nm like CONCAT('%',#{vendor_nm},'%') or v.vendor_nm_eng like CONCAT('%',#{vendor_nm},'%'))
+			</if>
+			<if test='tel_txt != null and tel_txt != ""'>
+			and v.tel_txt like CONCAT('%',#{tel_txt},'%')
+			</if>
+			<if test='stats_typ_cd != null and stats_typ_cd != ""'>
+			and v.stats_typ_cd = #{stats_typ_cd}
+			</if>
+			order by v.vendor_cd			
+	</select>
+
+
+
+</mapper>

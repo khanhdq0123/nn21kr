@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.TmsDAO">
+ 
+<select id="selectTmsList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select m.tms_no
+		,m.title
+		,m.part1
+		,m.part2
+		,m.pg_url
+		,m.appr_cd
+		,m.sts_cd
+		,case when m.sts_cd = '10701' then '접수'  when m.sts_cd = '10702' then '진행예정' when m.sts_cd = '10703' then '진행중' when m.sts_cd = '10704' then '개발완료' end as sts_nm
+		, case when m.sts_cd = '10701' then 'black'  when m.sts_cd = '10702' then 'green' when m.sts_cd = '10703' then 'red' when m.sts_cd = '10704' then 'blue' end as css_nm
+		,m.comment
+		,m.start_dt
+		,m.due_dt
+		,m.finish_dt
+		,m.reg_dt
+		,m.mod_dt
+		,m.reg_id
+		,m.mod_id
+		,m.del_yn
+		, (select count(0) from tb_tms_mst i where i.part1 = m.part1) as cnt1
+		, (select count(0) from tb_tms_mst j where j.part1 = m.part1 and j.part2 = m.part2) as cnt2
+		, (select c.comment_txt from tb_tms_comment c where c.tms_no = m.tms_no order by c.reg_dt desc limit 1) as comment_txt
+		, (select a.filename_txt from tb_tms_attach a where a.tms_no = m.tms_no limit 1) as filename_txt
+	from tb_tms_mst m
+	where del_yn = 'N'
+	<if test='part1 != null and part1 != ""'>
+	and part1 = #{part1}
+	</if>	
+	order by part1,part2,title
+</select>
+
+<select id="selectTmsAttachList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+select ta.tms_no
+		,ta.att_seq
+		,CAST( ta.filename_txt AS CHAR (10000) CHARACTER SET UTF8) AS filename_txt
+		,ta.attachfile_txt
+from tb_tms_attach ta
+where ta.tms_no = #{tms_no}
+</select>
+
+<select id="selectTmsCommentList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select tms_no
+		, comment_seq
+		, comment_txt
+		, reg_id
+		, DATE_FORMAT(reg_dt, '%Y-%m-%d %T') as reg_dt
+		, mod_id
+		, DATE_FORMAT(mod_dt, '%Y-%m-%d %T') as mod_dt
+	from tb_tms_comment
+	where tms_no = #{tms_no}
+	order by reg_dt desc
+</select>
+
+<select id="selectTmsDetail" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select tms_no
+		,title
+		,part1
+		,part2
+		,pg_url
+		,appr_cd
+		,sts_cd
+		,comment
+		,start_dt
+		,due_dt
+		,finish_dt
+		,reg_dt
+		,mod_dt
+		,reg_id
+		,mod_id
+		,del_yn
+	from tb_tms_mst
+	where del_yn = 'N' and tms_no = #{tms_no}
+</select>
+
+<insert id="insertTms" parameterType="java.util.HashMap" >
+	insert into tb_tms_mst(
+		title
+		,part1
+		,part2
+		,pg_url
+		,appr_cd
+		,sts_cd
+		,comment
+		,start_dt
+		,due_dt
+		,finish_dt
+		,reg_dt
+		,reg_id
+	) values (#{title}
+		,#{part1}
+		,#{part2}
+		,#{pg_url}
+		,#{appr_cd}
+		,#{sts_cd}
+		,#{comment}
+		,#{start_dt}
+		,#{due_dt}
+		,#{finish_dt}
+		, now()
+		,#{reg_id}
+	)
+</insert>
+
+<insert id="insertTmsComment" parameterType="java.util.HashMap">
+	INSERT INTO tb_tms_comment(
+		tms_no
+		,comment_txt
+		,reg_id
+		,reg_dt
+	) VALUES (
+		#{tms_no}
+		,#{comment_txt}
+		,#{reg_id}
+		,NOW()
+	)
+</insert>
+
+<insert id="insertTmsAttach" parameterType="java.util.HashMap">
+	INSERT INTO tb_tms_attach (
+		tms_no
+		,filename_txt
+		,attachfile_txt
+		,reg_id
+		,reg_dt
+	) VALUES (
+		#{tms_no}
+		,#{filename_txt}
+		,#{attachfile_txt}
+		,#{reg_id}
+		,NOW()
+	)
+</insert>
+
+<update id="updateTms" parameterType="java.util.HashMap">
+	update tb_tms_mst set
+		title = #{title}
+		,part1 = #{part1}
+		,part2 = #{part2}
+		,pg_url = #{pg_url}
+		,appr_cd = #{appr_cd}
+		,sts_cd = #{sts_cd}
+		,comment = #{comment}
+		,start_dt = #{start_dt}
+		,due_dt = #{due_dt}
+		,finish_dt = #{finish_dt}
+		,mod_dt = now()
+		,mod_id = #{mod_id}
+	where tms_no = #{tms_no}
+</update>
+
+<delete id="deleteTms" parameterType="java.util.HashMap">
+	delete from tb_tms_mst where tms_no = #{tms_no}
+</delete>
+
+<delete id="deleteTmsComment" parameterType="java.util.HashMap">
+	delete from tb_tms_comment 
+	where comment_seq = #{comment_seq}
+</delete>
+
+<delete id="deleteTmsAttach" parameterType="java.util.HashMap">
+	delete from tb_tms_attach where att_seq = #{att_seq}
+</delete>
+
+</mapper>

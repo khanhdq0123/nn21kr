@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="CUFN02Service">
+ 
+	<insert id="getCUFN02MstSeq" parameterType="java.util.HashMap">
+		insert into sq_trade_remittance_board_mst(debitcredit_no) values(0)
+		<selectKey keyProperty="debitcredit_no" resultType="int" >select last_insert_id()</selectKey>
+	</insert>
+	
+	<select id="getSearchMin" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	      <![CDATA[	 
+		    SELECT min(a.family) as family			 
+			  FROM trade_remittance_board a			 
+		  ]]> 
+	</select>
+	
+
+	<select id="getSearch" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	<![CDATA[
+    SELECT a.debitcredit_no
+	 		, b.vendor_cd AS conpany_code	
+			, b.vendor_nm AS company_nm		 
+		    , CASE WHEN a.family <= 0 AND a.order_by =0 THEN a.Title
+		           WHEN a.family <= 0 AND a.order_by <= 1 THEN 
+		               CONCAT('  re ',a.title)
+		           WHEN a.family <= 0 AND a.order_by <= 2 THEN 
+		               CONCAT('    re ',a.title)
+			  ELSE 
+			    CONCAT('        re ',a.title)  
+			  END AS title 
+			 , a.writer_id
+			 , a.arrival
+			 , b.upvendor_no AS branch_in_charge
+			 , b.upvendor_nm AS branch_in_charge_nm
+			 , a.reception_branch
+			 , a.approver
+			 , a.family
+			 , a.order_by
+			 , a.step
+			 , DATE_FORMAT(a.reg_dt,'%Y-%m-%d %T') as reg_dt
+		FROM trade_remittance_board a
+  INNER JOIN ven_vendorinfo b
+          ON a.conpany_code = b.vendor_no
+	   WHERE 1=1				
+	]]>
+	<if test='regdt_from != null and regdt_from != ""'> 
+    	AND DATE_FORMAT(a.reg_dt,'%Y-%m-%d') BETWEEN #{regdt_from} AND #{regdt_to}
+    </if>
+	ORDER BY a.family ASC, a.order_by ASC
+	</select>
+	
+	<select id="getSearchDtl" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT a.debitcredit_no
+			 , a.conpany_code
+			 , a.title
+			 , a.content
+			 , a.writer_id
+			 , a.arrival
+			 , a.branch_in_charge
+			 , a.reception_branch
+			 , a.approver
+			 , a.family
+			 , a.order_by
+			 , a.step
+			 , a.reg_dt
+		FROM trade_remittance_board a
+		where a.debitcredit_no = #{debitcredit_no}
+	</select>
+
+	<insert id="insert" parameterType="java.util.HashMap">
+	<![CDATA[
+		insert into trade_remittance_board (
+		       debitcredit_no
+			 , conpany_code
+			 , title
+			 , content
+			 , writer_id
+			 , arrival
+			 , branch_in_charge
+			 , reception_branch
+			 , approver
+			 , family
+			 , order_by
+			 , step
+			 , reg_dt
+		) VALUES (
+		       #{debitcredit_no}
+			 , #{conpany_code}
+			 , #{title_txt}
+			 , #{content_txt}
+			 , #{writer_id}
+			 , NOW()
+			 , #{branch_in_charge}
+			 , #{reception_branch}
+			 , #{approver}
+			 , #{family}
+			 , #{order_by}
+			 , #{step}
+			 , NOW()
+		)
+		]]>
+	</insert>
+	
+	<insert id="insertAttach" parameterType="java.util.HashMap">
+		INSERT INTO trade_remittance_board_attach
+		            ( debitcredit_no
+		            , filename_txt
+		            , attachfile_txt
+		            , download_cnt
+		            , reg_id
+		            , reg_dt)
+		VALUES     ( #{debitcredit_no}
+		           , #{filename_txt}
+		           , #{attachfile_txt}
+		           , 0
+		           , #{reg_id}
+		           , NOW() )
+	</insert>
+	
+	<insert id="reply" parameterType="java.util.HashMap">
+		<!-- 원글의 step보다 더 큰 step을 가진 글이 있다면 그 글들의 step을 먼저 +1 한다. -->
+		<![CDATA[
+			{CALL DECLARE BEGIN
+				UPDATE trade_remittance_board SET step = #{step } + 1
+				WHERE debitcredit_no = #{debitcredit_no} 
+				AND family = #{family } AND step > #{step };
+				
+				insert into trade_remittance_board (
+				       debitcredit_no
+					 , conpany_code
+					 , title
+					 , content
+					 , writer_id
+					 , arrival
+					 , branch_in_charge
+					 , reception_branch
+					 , approver
+					 , family
+					 , order_by
+					 , step
+					 , reg_dt
+				) VALUES (
+				       #{debitcredit_no}
+					 , #{conpany_code}
+					 , #{title_txt}
+					 , #{content_txt}
+					 , #{writer_id}
+					 , CURDATE()
+					 , #{branch_in_charge}
+					 , #{reception_branch}
+					 , #{approver}
+					 , #{family}
+					 , #{order_by}
+					 , #{step}
+					 , CURDATE()
+				)				
+			END}
+		]]>
+	</insert>
+	
+	<update id="update" parameterType="java.util.HashMap">
+		UPDATE trade_remittance_board
+		SET     title            = #{title_txt}
+		      , content          = #{content_txt}
+		      , writer_id        = #{writer_id}
+		      , arrival          = #{arrival}
+		      , branch_in_charge = #{branch_in_charge}
+		      , reception_branch = #{reception_branch}
+		      , approver         = #{approver}
+			  , family           = #{family}
+			  , order_by         = #{order_by}
+			  , step             = #{step}
+		WHERE debitcredit_no     = #{debitcredit_no}
+		AND   conpany_code       = #{conpany_code}
+	</update>
+	
+	<delete id="delete" parameterType="java.util.HashMap">
+		delete from trade_remittance_board 
+		      Where debitcredit_no     = #{debitcredit_no} 
+		        AND conpany_code       = #{conpany_code}
+	</delete>
+
+</mapper>

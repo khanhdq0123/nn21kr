@@ -1,0 +1,691 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="VEOR03Service">
+ 
+	<select id="getSearch" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select m.ord_no
+			,m.ord_typ
+			,case when(m.ord_typ = '1') then '운송접수' when(m.ord_typ = '2') then '보관접수' when(m.ord_typ = '3') then '견적접수'
+			 when(m.ord_typ = '4') then '원산지접수' when(m.ord_typ = '5') then '통관접수' end as ord_typ_nm
+			,m.send_no
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.send_no) as send_nm
+			,m.receive_no
+			, (select concat('[',v.vendor_cd, '] ', v.vendor_nm) from ven_vendorinfo v where v.vendor_no = m.receive_no) as receive_nm
+			,m.send_trade_comp_no
+			,m.receive_trade_comp_no
+			,m.send_cc_comp_no
+			,m.receive_cc_comp_no
+			,m.shipping_region_no
+			,m.send_region_no
+			,m.receive_region_no
+			, (select r.region_nm from tb_region r where r.code = m.shipping_region_no) as shipping_region_nm
+			, (select r.region_nm from tb_region r where r.code = m.send_region_no) as send_region_nm
+			, (select r.region_nm from tb_region r where r.code = m.receive_region_no) as receive_region_nm
+			, DATE_FORMAT(m.start_dt, '%Y-%m-%d %T') as start_dt
+			, DATE_FORMAT(m.arrive_dt, '%Y-%m-%d %T') as arrive_dt
+			, DATE_FORMAT(m.shipment_dt, '%Y-%m-%d %T') as shipment_dt
+			,m.transport_way
+			,(select code_nm from sys_codeinfo c where c.code_cd = m.transport_way) as transport_way_nm
+			,m.e_commence_yn
+			,m.charge_target_typ
+			,m.payment_method_typ
+			,m.start_vendor_no
+			,m.transfer_vendor_no
+			,m.arrive_vendor_no
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.start_vendor_no) as start_vendor_nm
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.transfer_vendor_no) as transfer_vendor_nm
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.arrive_vendor_no) as arrive_vendor_nm
+			,m.doc_req_cer_origin_yn
+			,m.doc_req_product_yn
+			,m.doc_req_fta_yn
+			,m.doc_req_su_yn
+			,m.stat_cd
+			,m.receive_dt
+			,m.release_dt
+			,m.reg_id
+			, DATE_FORMAT(m.reg_dt, '%Y-%m-%d') as reg_dt
+			,m.mod_id
+			, DATE_FORMAT(m.mod_dt, '%Y-%m-%d %T') as mod_dt
+			, (select concat(i.item_nm) as item_nm from ord_item i where i.ord_no = m.ord_no group by i.ord_no) as item_nm
+			, (select count(0) from ord_item i where i.ord_no = m.ord_no) as item_cnt
+			, (select sum(qty) from ord_item i where i.ord_no = m.ord_no) as qty
+			, (select sum(amt) from ord_item i where i.ord_no = m.ord_no) as amt
+			, (select sum(tot_amt) from ord_item i where i.ord_no = m.ord_no) as tot_amt
+			, (select sum(box_qty) from ord_item i where i.ord_no = m.ord_no) as box_qty
+			, (select round(sum(kg),1) from ord_item i where i.ord_no = m.ord_no) as kg
+			, (select round(sum(cbm),1) from ord_item i where i.ord_no = m.ord_no) as cbm
+		from ord_mst m
+		where stat_cd = '11603'
+		<choose>
+			<when test='inout_typ == "1"'>
+			and (m.transfer_vendor_no = #{vendor_no} or m.arrive_vendor_no = #{vendor_no})
+			</when>
+			<otherwise>
+			and (m.start_vendor_no = #{vendor_no} or m.transfer_vendor_no = #{vendor_no})
+			</otherwise>
+		</choose>
+		<if test='ord_typ != null and ord_typ != ""'>
+		and m.ord_typ = #{ord_typ}
+		</if>
+		order by m.reg_dt desc
+	</select>
+
+	<select id="getSearchDtl" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select m.ord_no
+			,m.ord_typ
+			,case when(m.ord_typ = '1') then '운송접수' when(m.ord_typ = '2') then '보관접수' when(m.ord_typ = '3') then '견적접수'
+			 when(m.ord_typ = '4') then '원산지접수' when(m.ord_typ = '5') then '통관접수' end as ord_typ_nm
+			,m.send_no
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.send_no) as send_nm
+			,m.receive_no
+			, (select concat('[',v.vendor_cd, '] ', v.vendor_nm) from ven_vendorinfo v where v.vendor_no = m.receive_no) as receive_nm
+			,m.send_trade_comp_no
+			,m.receive_trade_comp_no
+			,m.send_cc_comp_no
+			,m.receive_cc_comp_no
+			,m.shipping_region_no
+			,m.send_region_no
+			,m.receive_region_no
+			, (select addr from v_region r where r.code = m.shipping_region_no) as shipping_region_nm
+			, (select addr from v_region r where r.code = m.send_region_no) as send_region_nm
+			, (select addr from v_region r where r.code = m.receive_region_no) as receive_region_nm
+			, DATE_FORMAT(m.start_dt, '%Y-%m-%d %T') as start_dt
+			, DATE_FORMAT(m.arrive_dt, '%Y-%m-%d %T') as arrive_dt
+			, DATE_FORMAT(m.shipment_dt, '%Y-%m-%d %T') as shipment_dt
+			,m.transport_way
+			,(select code_nm from sys_codeinfo c where c.code_cd = m.transport_way) as transport_way_nm
+			,m.e_commence_yn
+			,m.charge_target_typ
+			,m.payment_method_typ
+			,m.start_vendor_no
+			,m.transfer_vendor_no
+			,m.arrive_vendor_no
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.start_vendor_no) as start_vendor_nm
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.transfer_vendor_no) as transfer_vendor_nm
+			, (select v.vendor_nm from ven_vendorinfo v where v.vendor_no = m.arrive_vendor_no) as arrive_vendor_nm
+			,m.doc_req_cer_origin_yn
+			,m.doc_req_product_yn
+			,m.doc_req_fta_yn
+			,m.doc_req_su_yn
+			,m.stat_cd
+			,m.receive_dt
+			,m.release_dt
+			,m.reg_id
+			, DATE_FORMAT(m.reg_dt, '%Y-%m-%d') as reg_dt
+			,m.mod_id
+			, DATE_FORMAT(m.mod_dt, '%Y-%m-%d %T') as mod_dt
+			, (select concat(i.item_nm) as item_nm from ord_item i where i.ord_no = m.ord_no group by i.ord_no) as item_nm
+			, (select count(0) from ord_item i where i.ord_no = m.ord_no) as item_cnt
+			, (select sum(qty) from ord_item i where i.ord_no = m.ord_no) as qty
+			, (select sum(amt) from ord_item i where i.ord_no = m.ord_no) as amt
+			, (select sum(tot_amt) from ord_item i where i.ord_no = m.ord_no) as tot_amt
+			, (select sum(box_qty) from ord_item i where i.ord_no = m.ord_no) as box_qty
+			, (select round(sum(kg),1) from ord_item i where i.ord_no = m.ord_no) as kg
+			, (select round(sum(cbm),1) from ord_item i where i.ord_no = m.ord_no) as cbm
+		from ord_mst m
+		where m.ord_no = #{ord_no}
+
+
+	</select>
+	
+	<select id="getStorageList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select vv.vendor_no
+		, vv.vendor_nm
+		, (select count(0) from container_mst cm where cm.wh_no = vv.vendor_no ) as wh_cnt
+		, (select count(0) from ord_wh ow where ow.wh_no = vv.vendor_no ) as ord_cnt
+		from ven_vendorinfo vv
+		where vv.upvendor_no = #{upvendor_no}
+		and vv.vendor_typ = 5
+	
+	</select>
+	
+	<select id="getStorageItemList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select oh.wh_no
+			, om.ord_no
+			, om.send_no
+			, (select vendor_nm from ven_vendorinfo where vendor_no = om.send_no) as send_nm 
+			, om.receive_no
+			, (select vendor_nm from ven_vendorinfo where vendor_no = om.receive_no) as receive_nm 
+			, om.send_region_no
+			, (select addr from v_region where code = om.send_region_no) as send_region_nm 
+			, om.receive_region_no
+			, (select addr from v_region where code = om.receive_region_no) as receive_region_nm 	
+			, DATE_FORMAT(om.start_dt, '%Y-%m-%d') as start_dt
+			, DATE_FORMAT(om.arrive_dt, '%Y-%m-%d') as arrive_dt
+			, concat(DATE_FORMAT(om.start_dt, '%m%d'),' - ',DATE_FORMAT(om.arrive_dt, '%m%d')) as schedule_txt
+			, om.transport_way
+			, (select code_nm from sys_codeinfo where code_cd = om.transport_way) as transport_nm
+			, oh.remain_box_cnt
+			, oh.box_cnt
+			, oh.weight
+			, oh.cbm
+		from ord_wh oh
+		inner join ord_mst om on om.ord_no = oh.ord_no
+		where oh.wh_no = #{wh_no}
+		and oh.remain_box_cnt > 0
+		order by oh.ord_no
+	</select>
+	
+	<select id="getTransportContainerList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select t.tp_no
+		, c.ct_no
+		, c.ct_typ
+		, (select code_nm from sys_codeinfo where code_cd = c.ct_typ) as ct_typ_nm
+		, c.ct_size
+		, (select code_nm from sys_codeinfo where code_cd = c.ct_size) as ct_size_nm
+		, c.wh_no
+		, c.seal_no
+		, c.ct_num
+	from transport_ct t
+	inner join  container_mst c on c.ct_no = t.ct_no
+	where t.tp_no = #{tp_no}
+	</select>
+	
+	<select id="getContainerList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select m.ct_no
+		,m.ct_typ
+		,c1.code_nm as ct_typ_nm
+		,m.ct_size
+		,c2.code_nm as ct_size_nm
+		,m.wh_no
+		,v.vendor_nm as wh_nm
+		,m.fcl_yn
+		,m.ct_num
+		,m.seal_no
+		, (select count(0) from container_ord c where c.ct_no = m.ct_no) as ord_cnt
+		,m.reg_id
+		,DATE_FORMAT(m.reg_dt, '%Y-%m-%d') as reg_dt
+		,m.mod_id
+		,DATE_FORMAT(m.mod_dt, '%Y-%m-%d') as mod_dt
+		from container_mst m
+		inner join sys_codeinfo c1 on c1.code_cd = m.ct_typ and c1.use_yn = 'Y'
+		inner join sys_codeinfo c2 on c2.code_cd = m.ct_size and c2.use_yn = 'Y'
+		inner join ven_vendorinfo v on v.vendor_no = m.wh_no
+		where m.wh_no = #{wh_no}
+		and m.ct_st_cd = '12501'
+		and m.use_yn = 'Y'
+		order by m.reg_dt desc
+	</select>
+	
+	<select id="getContainerOrdList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select c.ct_no
+			, oh.wh_no
+			, om.ord_no
+			, om.send_no
+			, (select vendor_nm from ven_vendorinfo where vendor_no = om.send_no) as send_nm 
+			, om.receive_no
+			, (select vendor_nm from ven_vendorinfo where vendor_no = om.receive_no) as receive_nm 
+			, om.send_region_no
+			, (select addr from v_region where code = om.send_region_no) as send_region_nm 
+			, om.receive_region_no
+			, (select addr from v_region where code = om.receive_region_no) as receive_region_nm 	
+			, DATE_FORMAT(om.start_dt, '%Y-%m-%d') as start_dt
+			, DATE_FORMAT(om.arrive_dt, '%Y-%m-%d') as arrive_dt
+			, concat(DATE_FORMAT(om.start_dt, '%m%d'),' - ',DATE_FORMAT(om.arrive_dt, '%m%d')) as schedule_txt
+			, om.transport_way
+			, (select code_nm from sys_codeinfo where code_cd = om.transport_way) as transport_nm
+			, oh.remain_box_cnt
+			, oh.box_cnt as tot_box_cnt
+			, oh.weight
+			, oh.cbm
+			, o.box_cnt as box_cnt
+		from ord_wh oh
+		inner join ord_mst om on om.ord_no = oh.ord_no
+		inner join container_mst c on c.wh_no = oh.wh_no
+		inner join container_ord o on o.ct_no = c.ct_no and o.ord_no = oh.ord_no
+		where c.ct_no = #{ct_no}
+		order by om.reg_dt desc
+	</select>
+	
+	
+
+	<insert id="insertContainerMst" parameterType="java.util.HashMap">
+		insert into container_mst(
+			ct_no
+			,ct_typ
+			,ct_size
+			,wh_no
+			,fcl_yn
+			,ct_num
+			,seal_no
+			,reg_id
+			,reg_dt
+			,mod_id
+			,mod_dt
+			) values (
+			#{ct_no}
+			,#{ct_typ}
+			,#{ct_size}
+			,#{wh_no}
+			,#{fcl_yn}
+			,#{ct_num}
+			,#{seal_no}
+			,#{reg_id}
+			,now()
+			,#{mod_id}
+			,now()
+			)
+	</insert>
+
+	<update id="updateContainerMst" parameterType="java.util.HashMap">
+		update container_mst 
+		set ct_typ = #{ct_typ}
+			, ct_size = #{ct_size}
+			, wh_no = #{wh_no}
+			, fcl_yn = #{fcl_yn}
+			, ct_num = #{ct_num}
+			, seal_no = #{seal_no}
+			, mod_id = #{mod_id}
+			, mod_dt = now()
+		where ct_no = #{ct_no}
+	</update>
+	
+	<update id="updateContainerMstStCd" parameterType="java.util.HashMap">
+		update container_mst 
+		set ct_st_cd = #{ct_st_cd}
+			, wh_no = #{wh_no}
+			, mod_id = #{mod_id}
+			, mod_dt = now()
+		where ct_no = #{ct_no}
+	</update>
+	
+	<delete id="deleteContainerMst" parameterType="java.util.HashMap">
+		delete from container_mst 
+		where ct_no = #{ct_no}
+	</delete>
+
+	<insert id="insertContainerOrd" parameterType="java.util.HashMap">
+		insert into container_ord(
+			ct_no
+			,wh_no
+			,ord_no
+			,box_cnt
+			) values (
+			#{ct_no}
+			,#{wh_no}
+			,#{ord_no}
+			,#{box_cnt}
+		)
+	</insert>
+	
+	<delete id="deleteContainerOrd" parameterType="java.util.HashMap">
+		delete from container_ord 
+		where ct_no = #{ct_no}
+		<if test='wh_no != null and wh_no != ""'>
+		and wh_no = #{wh_no}
+		</if>		
+		<if test='ord_no != null and ord_no != ""'>
+		and ord_no = #{ord_no}
+		</if>
+	</delete>
+
+	<update id="updateOrdWh" parameterType="java.util.HashMap">
+		update ord_wh 
+		set remain_box_cnt = remain_box_cnt - #{box_cnt}
+			, mod_id = #{mod_id}
+			, mod_dt = now()
+		where wh_no = #{wh_no}
+		and ord_no = #{ord_no}
+	</update>
+	
+	<update id="updateOrdWhRemainBoxCnt" parameterType="java.util.HashMap">
+		update ord_wh 
+		set remain_box_cnt = #{remain_box_cnt}
+			, mod_id = #{mod_id}
+			, mod_dt = now()
+		where wh_no = 
+		and ord_no = #{ord_no}
+	</update>
+
+	<update id="saveOrdWh" parameterType="java.util.HashMap">
+		INSERT INTO ord_wh(
+			wh_no
+			,ord_no
+			,stored_dt
+			,box_cnt
+			,remain_box_cnt
+			,packing_unit
+			,weight
+			,cbm
+			,comment
+			,reg_id
+			,reg_dt
+			,mod_id
+			,mod_dt
+		)
+		select #{wh_no}
+			,ord_no
+			,stored_dt
+			,box_cnt
+			,remain_box_cnt
+			,packing_unit
+			,weight
+			,cbm
+			,comment
+			,reg_id
+			,now()
+			,mod_id
+			,now()
+		from ord_wh ow
+		where wh_no = #{wh_no}
+		and ord_no = #{ord_no}
+		ON DUPLICATE KEY
+		UPDATE remain_box_cnt = ow.remain_box_cnt +  #{box_cnt}
+		, wh_no = #{wh_no}
+		, mod_id = #{mod_id}
+		, mod_dt = now()	
+	</update>
+
+	<select id="getTransportMst" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select t.tp_no
+			,t.transport_way
+			, (select a.code_nm from sys_codeinfo a where a.code_cd = t.transport_way) as transport_way_nm
+			, (select count(0) from transport_ct where tp_no = t.tp_no) as tp_ct_cnt
+			, (select count(0) from transport_ord where tp_no = t.tp_no) as tp_ord_cnt			
+			,t.air_nm
+			,t.air_flight_no
+			,t.car_comp_nm
+			,t.car_driver
+			,t.car_driver_tel
+			,t.car_no
+			,t.car_size
+			,t.ship_comp_nm
+			,t.ship_vessel_nm
+			,t.ship_shipping
+			,t.sub_comp_nm
+			,t.sub_from_tel
+			,t.sub_to_tel
+			,t.master_bl
+			,t.vendor_no
+			, (select vendor_nm from ven_vendorinfo v where v.vendor_no = t.vendor_no) as vendor_nm
+			,t.start_vendor_no
+			, (select vendor_nm from ven_vendorinfo v1 where v1.vendor_no = t.start_vendor_no) as start_vendor_nm
+			,t.arrive_vendor_no
+			, (select vendor_nm from ven_vendorinfo v2 where v2.vendor_no = t.arrive_vendor_no) as arrive_vendor_nm
+			,t.send_region_no
+			, (select region_nm from tb_region r1 where r1.code = t.send_region_no) as send_region_nm
+			,t.receive_region_no
+			, (select region_nm from tb_region r2 where r2.code = t.receive_region_no) as receive_region_nm
+			,DATE_FORMAT(t.start_dt, '%Y-%m-%d') as start_dt
+			,DATE_FORMAT(t.start_dt, '%H') as start_dt_hh
+			,DATE_FORMAT(t.start_dt, '%i') as start_dt_mi
+			,DATE_FORMAT(t.arrive_dt, '%Y-%m-%d') as arrive_dt
+			,DATE_FORMAT(t.arrive_dt, '%H') as arrive_dt_hh
+			,DATE_FORMAT(t.arrive_dt, '%i') as arrive_dt_mi
+			,t.reg_id
+			,DATE_FORMAT(t.reg_dt, '%Y-%m-%d') as reg_dt
+			,t.mod_id
+			,DATE_FORMAT(t.mod_dt, '%Y-%m-%d') as mod_dt
+		from transport_mst t
+		where (t.vendor_no = #{vendor_no} or t.start_vendor_no = #{vendor_no} or t.arrive_vendor_no = #{vendor_no})
+		<if test='transport_way != null and transport_way != ""'>
+		and t.transport_way = #{transport_way}
+		</if>
+		<if test='tp_no != null and tp_no != ""'>
+		and t.tp_no = #{tp_no}
+		</if>
+		<if test='tp_st_cd != null and tp_st_cd != ""'>
+		and t.tp_st_cd = #{tp_st_cd}
+		</if>
+	</select>
+
+	<insert id="insertTransportMst" parameterType="java.util.HashMap">
+		insert into transport_mst(
+			vendor_no
+			,transport_way
+			,air_nm
+			,air_flight_no
+			,car_comp_nm
+			,car_driver
+			,car_driver_tel
+			,car_no
+			,car_size
+			,ship_comp_nm
+			,ship_vessel_nm
+			,ship_shipping
+			,sub_comp_nm
+			,sub_from_tel
+			,sub_to_tel
+			,master_bl
+			,start_vendor_no
+			,send_region_no
+			,start_dt
+			,arrive_vendor_no
+			,receive_region_no
+			,arrive_dt
+			,reg_id
+			,reg_dt
+		) values (
+			#{vendor_no}
+			,#{transport_way}
+			,#{air_nm}
+			,#{air_flight_no}
+			,#{car_comp_nm}
+			,#{car_driver}
+			,#{car_driver_tel}
+			,#{car_no}
+			,#{car_size}
+			,#{ship_comp_nm}
+			,#{ship_vessel_nm}
+			,#{ship_shipping}
+			,#{sub_comp_nm}
+			,#{sub_from_tel}
+			,#{sub_to_tel}
+			,#{master_bl}
+			,#{start_vendor_no}
+			,#{send_region_no}
+			,#{start_dt}
+			,#{arrive_vendor_no}
+			,#{receive_region_no}
+			,#{arrive_dt}
+			,#{reg_id}
+			,now()
+		) 
+	</insert>
+
+	<update id="updateTransportMst" parameterType="java.util.HashMap">
+		update transport_mst 
+		set transport_way = #{transport_way}
+			, air_nm = #{air_nm}
+			, air_flight_no = #{air_flight_no}
+			, car_comp_nm = #{car_comp_nm}
+			, car_driver = #{car_driver}
+			, car_driver_tel = #{car_driver_tel}
+			, car_no = #{car_no}
+			, car_size = #{car_size}
+			, ship_comp_nm = #{ship_comp_nm}
+			, ship_vessel_nm = #{ship_vessel_nm}
+			, ship_shipping = #{ship_shipping}
+			, sub_comp_nm = #{sub_comp_nm}
+			, sub_from_tel = #{sub_from_tel}
+			, sub_to_tel = #{sub_to_tel}
+			, master_bl = #{master_bl}
+			, start_vendor_no = #{start_vendor_no}
+			, send_region_no = #{send_region_no}
+			, start_dt = #{start_dt}
+			, arrive_vendor_no = #{arrive_vendor_no}
+			, receive_region_no = #{receive_region_no}
+			, arrive_dt = #{arrive_dt}
+			, mod_id = #{mod_id}
+			, mod_dt = now()
+		where tp_no = #{tp_no}
+	</update>
+	
+	<update id="updateTransportMstStCd" parameterType="java.util.HashMap">
+		update transport_mst 
+		set tp_st_cd = #{tp_st_cd}
+			, mod_id = #{mod_id}
+			, mod_dt = now()
+		where tp_no = #{tp_no}
+	</update>
+	
+	<delete id="deleteTransportMst" parameterType="java.util.HashMap">
+		delete from transport_mst 
+		where tp_no = #{tp_no}
+	</delete>
+
+	<insert id="insertTransportOrd" parameterType="java.util.HashMap">
+		insert into transport_ord(
+			tp_no
+			,wh_no
+			,ord_no
+			,box_cnt
+			) values (
+			#{tp_no}
+			,#{wh_no}
+			,#{ord_no}
+			,#{box_cnt}
+		)
+	</insert>
+	
+	<delete id="deleteTransportOrd" parameterType="java.util.HashMap">
+		delete from transport_ord 
+		where tp_no = #{tp_no}
+		<if test='ord_no != null and ord_no != ""'>
+		and ord_no = #{ord_no}
+		</if>
+	</delete>
+
+	<insert id="insertTransportContainer" parameterType="java.util.HashMap">
+		insert into transport_ct(
+			tp_no
+			,ct_no
+			) values (
+			#{tp_no}
+			,#{ct_no}
+		)
+	</insert>
+	
+	<delete id="deleteTransportContainer" parameterType="java.util.HashMap">
+		delete from transport_ct 
+		where tp_no = #{tp_no}
+		<if test='ct_no != null and ct_no != ""'>
+		and ct_no = #{ct_no}
+		</if>		
+	</delete>
+
+	<insert id="insertTransportCompHst" parameterType="java.util.HashMap">
+		insert into transport_comp_hst(
+			transport_way
+			,vendor_no
+			,air_comp_nm
+			,air_flight_no
+			,car_comp_nm
+			,car_driver
+			,car_driver_tel
+			,car_no
+			,car_size
+			,ship_comp_nm
+			,ship_vessel_nm
+			,ship_shipping
+			,sub_comp_nm
+			,sub_from_tel
+			,sub_to_tel
+			,reg_id
+			,reg_dt
+		) values (
+			#{transport_way}
+			,#{vendor_no}
+			,#{air_comp_nm}
+			,#{air_flight_no}
+			,#{car_comp_nm}
+			,#{car_driver}
+			,#{car_driver_tel}
+			,#{car_no}
+			,#{car_size}
+			,#{ship_comp_nm}
+			,#{ship_vessel_nm}
+			,#{ship_shipping}
+			,#{sub_comp_nm}
+			,#{sub_from_tel}
+			,#{sub_to_tel}
+			,#{reg_id}
+			,now()
+		) 
+	</insert>
+	
+	<select id="getTransportOrdList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select t.tp_no
+			, t.wh_no
+			, t.ord_no
+			, t.box_cnt 
+			, w.weight
+			, w.cbm
+			, w.packing_unit
+			, (select vendor_nm from ven_vendorinfo where vendor_no = m.send_no) as send_nm 
+			, (select region_nm from tb_region where code = m.send_region_no) as send_region_nm 
+			, (select addr from v_region where code = m.send_region_no) as send_region_addr 
+		from transport_ord t
+		inner join ord_wh w on w.wh_no = t.wh_no and w.ord_no = t.ord_no
+		inner join ord_mst m on m.ord_no = w.ord_no
+		where t.tp_no = #{tp_no}
+		order by t.tp_no
+	</select>
+
+	<delete id="deleteTransportCompHst" parameterType="java.util.HashMap">
+		delete from transport_comp_hst 
+		where tp_comp_hts_no = #{tp_comp_hts_no}
+	</delete>
+	
+	<select id="getTransportCompHst" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select air_comp_nm
+			,air_flight_no
+			,car_comp_nm
+			,car_driver
+			,car_driver_tel
+			,car_no
+			,car_size
+			,ship_comp_nm
+			,ship_vessel_nm
+			,sub_comp_nm
+			,sub_from_tel
+			,sub_to_tel
+		from transport_comp_hst
+		where vendor_no = #{vendor_no}
+		<if test='transport_way != null and transport_way != ""'>
+		and transport_way = #{transport_way}
+		</if>
+		group by air_comp_nm
+		,air_flight_no
+		,car_comp_nm
+		,car_driver
+		,car_driver_tel
+		,car_no
+		,car_size
+		,ship_comp_nm
+		,ship_vessel_nm
+		,sub_comp_nm
+		,sub_from_tel
+		,sub_to_tel
+	</select>
+	
+	<update id="updateOrdMstStCd1" parameterType="java.util.HashMap">
+		update ord_mst m
+		inner join container_ord c on c.ord_no = m.ord_no
+		inner join transport_ct t on t.ct_no = c.ct_no and t.tp_no = #{tp_no}
+		set m.stat_cd = #{stat_cd}
+		,m.mod_id = #{mod_id}
+		,m.mod_dt = now()	
+	</update>
+	
+	<update id="updateOrdMstStCd2" parameterType="java.util.HashMap">
+		update ord_mst o
+		inner join transport_ord t on t.ord_no = o.ord_no
+		and t.tp_no = #{tp_no}
+		set o.stat_cd = #{stat_cd}
+		,o.mod_id = #{mod_id}
+		,o.mod_dt = now()
+	</update>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+</mapper>

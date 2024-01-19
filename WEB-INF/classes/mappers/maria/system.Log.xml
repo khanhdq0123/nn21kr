@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="system.AdminlogDAO">
+
+<select id="selectStaffList" resultType="java.util.HashMap">
+	select staff_id
+	     , staff_nm
+	  from sys_staffinfo
+	 where use_yn != 'n'
+	 order by staff_nm
+</select>
+
+<select id="selectMenuList" resultType="java.util.HashMap">
+	select b.menu_nm
+         , max(b.menu_id) as menu_id
+      from sys_login_history a
+         , sys_menuinfo      b
+    where a.menu_id = b.menu_id
+      and b.use_yn  = 'y'
+    group by b.menu_nm 
+    order by min(b.menu_nm)
+</select>
+
+<select id="selectProgramCountList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select u.*
+	  from (
+		select t.*, row_number() over (
+				<if test="sidx != ''">
+					order by ${sidx} ${sord}
+				</if>
+				) as rownum 
+		  from (									
+			select query.*
+			  from(		
+					select menu_id as program_id
+					     , (select menu_nm from sys_menuinfo where menu_id = a.menu_id) menu_nm
+					     , count(1) log_cnt
+					     , row_number() over (order by menu_id) as seq
+					  from  sys_login_history a																	
+					 where 1=1
+			        <if test="staff_nm != ''">
+					   and staff_id like '%${staff_nm}%'
+					</if>
+					<if test="staff_id != ''">
+					   and staff_id like '%${staff_id}%'
+					</if>
+					<if test="menu_id != ''">
+					   and menu_id like '%${menu_id}%'
+					</if>
+					<if test="reg_dt_first != ''">
+					   and reg_dt <![CDATA[ >= ]]> '${reg_dt_first}'
+					</if>
+					<if test="reg_dt_last != ''">
+					   and reg_dt <![CDATA[ <= ]]> '${reg_dt_last}'
+					</if>
+				     group by menu_id																															     
+			 ) query
+		 )t
+	)u
+	where rownum between #{snum} and #{enum}
+	 
+</select>
+
+<select id="selectAdminProgramLogDetail" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+	select t.*
+	  from (
+			select s.*, row_number() over (
+			<if test="sidx != ''">
+				order by ${sidx} ${sord}
+			</if>
+			) as rownum
+		                 
+		  from(
+				select (select login_id from sys_staffinfo where staff_id = a.staff_id) as login_id
+				     , (select staff_nm from sys_staffinfo where staff_id = a.staff_id) as staff_nm
+				     , staff_ip
+				     , DATE_FORMAT(reg_dt, '%Y-%m-%d %H:%i:%s') as reg_dt
+				     , row_number() over (order by reg_dt) as seq
+				  from sys_login_history a
+				<if test="p_id != ''">
+				 where menu_id = '${p_id}'
+				</if>
+	      ) s
+	  ) t
+	  where rownum between #{snum} and #{enum}
+</select>
+
+<select id="selectProgramCount" parameterType="java.util.HashMap" resultType="Integer">
+	select count(*)
+	  from(		
+			select menu_id	as program_id
+			     , (select menu_nm from sys_menuinfo where menu_id = a.menu_id) menu_nm
+			     , count(1) log_cnt																		
+			  from  sys_login_history a																	
+			 where 1=1
+	        <if test="staff_nm != ''">
+			   and staff_id like '%${staff_nm}%'
+			</if>
+			<if test="staff_id != ''">
+			   and staff_id like '%${staff_id}%'
+			</if>
+			<if test="menu_id != ''">
+			   and menu_id like '%${menu_id}%'
+			</if>
+			<if test="reg_dt_first != ''">
+			   and reg_dt <![CDATA[ >= ]]> '${reg_dt_first}'
+			</if>
+			<if test="reg_dt_last != ''">
+			   and reg_dt <![CDATA[ <= ]]> '${reg_dt_last}'
+			</if>
+		     group by menu_id
+	 ) query
+</select>
+
+<select id="selectAdminProgramCount" parameterType="java.util.HashMap" resultType="Integer">	
+	select count(*)
+	  from sys_login_history a
+	<if test="p_id != ''">
+	 where menu_id = '${p_id}'
+	</if>
+</select>
+
+<select id="selectDate" resultType="java.util.HashMap">
+	select DATE_FORMAT(DATE_ADD(NOW(),INTERVAL -30 DAY), '%Y-%m-%d') as datefrom
+		  , DATE_FORMAT(NOW(), '%Y-%m-%d') as dateto		  
+</select>
+
+</mapper>

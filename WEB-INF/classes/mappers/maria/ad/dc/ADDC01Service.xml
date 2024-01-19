@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ADCD01Service">
+ 
+	<select id="getSearch" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select e.exch_no
+			, e.exch_cd
+			, e.inp_dt
+			, e.type
+			, e.foreign_cost
+			, e.local_curr_exh_cost
+			, e.start_dt
+			, e.end_dt
+		from exchange_rate e
+		WHERE 1=1
+		<if test='exch_cd != null and exch_cd != ""'>
+		and e.exch_cd = #{exch_cd}
+		</if>
+		order by e.exch_no desc
+	</select>
+	
+	<select id="getSearchDtl" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		select e.exch_no
+			, e.exch_cd
+			, e.inp_dt
+			, e.type
+			, e.foreign_cost
+			, e.local_curr_exh_cost
+			, e.start_dt
+			, e.end_dt
+		from exchange_rate e
+		where e.exch_no = #{exch_no}
+	</select>
+
+	<insert id="insert" parameterType="java.util.HashMap">
+		insert into exchange_rate (
+			exch_cd
+			, inp_dt
+			, type
+			, foreign_cost
+			, local_curr_exh_cost
+			, start_dt
+			, end_dt
+		) VALUES (
+			#{exch_cd}
+			, #{inp_dt}
+			, #{type}
+			, #{foreign_cost}
+			, #{local_curr_exh_cost}
+			, #{start_dt}
+			, #{end_dt}
+		)
+	</insert>
+
+	<update id="update" parameterType="java.util.HashMap">
+		update exchange_rate 
+		set exch_cd = #{exch_cd}
+			, inp_dt = #{inp_dt}
+			, type = #{type}
+			, foreign_cost = #{foreign_cost}
+			, local_curr_exh_cost = #{local_curr_exh_cost}
+			, start_dt = #{start_dt}
+			, end_dt = #{end_dt}
+		where exch_no = #{exch_no}
+	</update>
+	
+	<delete id="delete" parameterType="java.util.HashMap">
+		delete from exchange_rate where exch_no = #{exch_no}
+	</delete>
+
+</mapper>
